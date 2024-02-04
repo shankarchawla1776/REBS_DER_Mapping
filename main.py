@@ -9,7 +9,8 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
 
-load_dotenv(Path("/my/path/.env"))
+
+load_dotenv(Path(".env"))
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -55,9 +56,9 @@ resp_util_sol = s3_client.get_object(Bucket=bucket_name, Key='utility_solar (1).
 util_sol_data = resp_util_sol['Body'].read().decode('utf-8')
 util_sol_df = pd.read_csv(io.StringIO(util_sol_data), on_bad_lines='skip', delimiter='\t')
 
-CAISO_geojson = s3_client.get_object(Bucket=bucket_name, Key='CA (1).geojson')
-CAISO_geojson_data = CAISO_geojson['Body'].read().decode('utf-8')
-geojson_data = CAISO_geojson_data['Body'].read().decode('utf-8')
+# CAISO_geojson = s3_client.get_object(Bucket=bucket_name, Key='CA (1).geojson')
+# CAISO_geojson_data = CAISO_geojson['Body'].read().decode('utf-8')
+# geojson_data = CAISO_geojson_data['Body'].read().decode('utf-8')
 
 # print(util_sol_df.head())
 
@@ -85,6 +86,7 @@ marker_cluster_sol = FastMarkerCluster(data=locs_sol, callback=callback_1).add_t
 marker_cluster_wind = FastMarkerCluster(data=locs_wind, callback=callback_0).add_to(m)
 
 resp_distr_sol = s3_client.get_object(Bucket=bucket_name, Key='CASIO_coords.csv')
+
 distr_sol_data = resp_distr_sol['Body'].read().decode('utf-8')
 CASIO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
 
@@ -92,20 +94,6 @@ CASIO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
 
 lats_distr = CASIO_coords_sol["latitude"]
 longs_distr = CASIO_coords_sol["longitude"]
-
-# def create_clusters(locations, callback, max_distance):
-#     clusters = []
-#     for loc in locations:
-#         added_to_cluster = False
-#         for cluster in clusters:
-#             if all(np.linalg.norm(np.array(loc) - np.array(cluster)) < max_distance for cluster in clusters):
-#                 cluster.append(loc)
-#                 added_to_cluster = True
-#                 break
-#         if not added_to_cluster:
-#             clusters.append([loc])
-#     marker_cluster = FastMarkerCluster(data=clusters, callback=callback).add_to(m)
-#     return marker_cluster
 
 
 max_cluster_distance = 5
@@ -127,49 +115,17 @@ function (row) {
 
 marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, options={'distance': max_cluster_distance}).add_to(m)
 
-# california_geojson = {
-#     "type": "Feature",
-#     "geometry": {
-#         "type": "Polygon",
-#         "coordinates": [[
-#             [-125, 32],
-#             [-114, 32],
-#             [-114, 37],
-#             [-125, 37],
-#             [-125, 32]
-#         ]]
-#     },
-#     "properties": {
-#         "name": "California"
-#     }
-# }
- 
-# def on_geojson_click(feature, layer):
-#     # You can customize the HTML content as needed
-#     html_content = "<div style='position: absolute; top: 10px; right: 10px; background-color: white; padding: 10px;'>California Information</div>"
-#     m.get_root().html.add_child(folium.Element(html_content))
-
-# # Add GeoJSON layer to the map
-# folium.GeoJson(california_geojson,
-#                name="California",
-#                style_function=lambda x: {'fillColor': 'transparent', 'color': 'blue'},
-#                highlight_function=lambda x: {'fillColor': '#ff0000', 'color': '#0000ff'},
-#                tooltip="California",
-#                on_each_feature=on_geojson_click  # Add this line
-#                ).add_to(m)
 
 
-def on_map_click(event):
-    lat, lon = event.latlng
-    popup_text = f"Clicked at: ({lat}, {lon})"
+# def on_map_click(event):
+#     lat, lon = event.latlng
+#     popup_text = f"Clicked at: ({lat}, {lon})"
     
-    popup = folium.Popup(popup_text, max_width=300)
-    marker = folium.Marker([lat, lon], popup=popup)
+#     popup = folium.Popup(popup_text, max_width=300)
+#     marker = folium.Marker([lat, lon], popup=popup)
     
-    m.add_child(marker)
+#     m.add_child(marker)
 
-# Attach the click event handler to the map
-m.add_click_for_marker(on_map_click)
 
 m.add_child(marker_cluster_distr_sol)
 m.add_child(marker_cluster_wind)
