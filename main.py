@@ -1,4 +1,5 @@
 import folium
+from folium import plugins
 import numpy as np 
 import pandas as pd 
 import matplotlib.pyplot as plt
@@ -8,6 +9,8 @@ import boto3
 import os                                                                                                                                                                                                          
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
+import json
+
 
 
 load_dotenv(Path(".env"))
@@ -19,7 +22,12 @@ bucket_name = 'dermod'
 
 s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
+resp_lines = s3_client.get_object(Bucket=bucket_name, Key='Electric_Power_Transmission_Lines.geojson')
+
+geojson_data = resp_lines['Body'].read().decode('utf-8')
+
 resp_wind = s3_client.get_object(Bucket=bucket_name, Key='wind_energy_2.csv')
+
 wind_data = resp_wind['Body'].read().decode('utf-8')
 wind_df = pd.read_csv(io.StringIO(wind_data))
 
@@ -130,7 +138,7 @@ marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callb
 m.add_child(marker_cluster_distr_sol)
 m.add_child(marker_cluster_wind)
 m.add_child(marker_cluster_sol)
-m.save("map_w_CAISO_click.html")
+m.save("map_CAISO.html")
 
 CASIO_sol = util_sol_df[util_sol_df["state"] == "CA"]
 
