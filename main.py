@@ -22,9 +22,9 @@ bucket_name = 'dermod'
 
 s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
-resp_lines = s3_client.get_object(Bucket=bucket_name, Key='Electric_Power_Transmission_Lines.geojson')
+# resp_lines = s3_client.get_object(Bucket=bucket_name, Key='Electric_Power_Transmission_Lines.geojson')
 
-geojson_data = resp_lines['Body'].read().decode('utf-8')
+# geojson_data = resp_lines['Body'].read().decode('utf-8')
 
 resp_wind = s3_client.get_object(Bucket=bucket_name, Key='wind_energy_2.csv')
 
@@ -39,13 +39,13 @@ m = folium.Map(location=us_center, zoom_start=4, zoom_control = False, scrollWhe
 # wind_df = pd.read_csv("data/wind_energy_2.csv")
 
 
-CASIO_wind = wind_df[wind_df["t_state"] == "CA"]
+CAISO_wind = wind_df[wind_df["t_state"] == "CA"]
 
-xlong_values = CASIO_wind["xlong"].tolist()
+xlong_values = CAISO_wind["xlong"].tolist()
 
-ylat_values = CASIO_wind["ylat"].tolist()
+ylat_values = CAISO_wind["ylat"].tolist()
 
-locs_wind = CASIO_wind.apply(lambda row: (row["ylat"], row["xlong"]), axis=1).tolist()
+locs_wind = CAISO_wind.apply(lambda row: (row["ylat"], row["xlong"]), axis=1).tolist()
 
 callback_0 = """\
 function (row) { 
@@ -84,8 +84,8 @@ function (row) {
 };
 """
 
-CASIO_sol = util_sol_df[util_sol_df["state"] == "CA"]
-locs_sol = CASIO_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
+CAISO_sol = util_sol_df[util_sol_df["state"] == "CA"]
+locs_sol = CAISO_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
 
 marker_cluster_sol = FastMarkerCluster(data=locs_sol, callback=callback_1).add_to(m)
 
@@ -96,17 +96,17 @@ marker_cluster_wind = FastMarkerCluster(data=locs_wind, callback=callback_0).add
 resp_distr_sol = s3_client.get_object(Bucket=bucket_name, Key='CASIO_coords.csv')
 
 distr_sol_data = resp_distr_sol['Body'].read().decode('utf-8')
-CASIO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
+CAISO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
 
 # CASIO_coords_sol = pd.read_csv("data/CAISO_data/CASIO_coords.csv")
 
-lats_distr = CASIO_coords_sol["latitude"]
-longs_distr = CASIO_coords_sol["longitude"]
+lats_distr = CAISO_coords_sol["latitude"]
+longs_distr = CAISO_coords_sol["longitude"]
 
 
 max_cluster_distance = 5
 
-locs_distr_sol = CASIO_coords_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
+locs_distr_sol = CAISO_coords_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
 
 
 callback_2 = """
@@ -140,6 +140,6 @@ m.add_child(marker_cluster_wind)
 m.add_child(marker_cluster_sol)
 m.save("map_CAISO.html")
 
-CASIO_sol = util_sol_df[util_sol_df["state"] == "CA"]
+CAISO_sol = util_sol_df[util_sol_df["state"] == "CA"]
 
 ylat = util_sol_df["latitude"].tolist()
