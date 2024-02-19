@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixed Hub Bar</title>
+<style>
+    .hub-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #D0FFBC;
+        padding: 60px 0;
+        text-align: center;
+        z-index: 1000; 
+    }
+
+    .hub-bar button {
+        background-color: #000;
+        color: white;
+        border: none;
+        padding: 20px 20px;
+        margin: 25px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+
+    .content {
+        margin-top: 200px; 
+        padding: 20px;
+    }
+
+    .text { 
+        color: #000;
+        position: absolute;
+        top: 0;
+        left: 10px;
+        margin: 10px;
+    }
+
+    .key {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        padding: 0 300px;
+        margin-bottom: 10px;
+        color: #000;
+    }
+
+    .color-box {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+</style>
+</head>
+<body>
+    <div class="hub-bar">
+        <div class="key">
+            <div class="color-box" style="background-color: red;"></div> Description of red points<br>
+            <div class="color-box" style="background-color: blue;"></div> Description of blue points<br>
+            <div class="color-box" style="background-color: green;"></div> Description of green points<br>
+            <!-- Add more color descriptions as needed -->
+        </div>
+        <h1 class="text">
+            Distributed Energy Resources Map
+        </h1>
+        <!-- <button>Button 1</button>
+        <button>Button 2</button>
+        <button>Button 3</button> -->
+    </div>
+
+    <div class="content">
+        <h1>Fixed Hub Bar Example</h1>
+        <p>This is the content below the fixed hub bar.</p>
+        <p>You can add more content here.</p>
+    </div>
+</body>
+</html>
