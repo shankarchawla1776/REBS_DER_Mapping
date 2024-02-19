@@ -87,9 +87,9 @@ max_cluster_distance = 5
 
 
 
-marker_cluster_sol = FastMarkerCluster(data=locs_sol, callback=callback_1).add_to(m)
-marker_cluster_wind = FastMarkerCluster(data=locs_wind, callback=callback_0).add_to(m)
-marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, options={'distance': max_cluster_distance}).add_to(m)
+marker_cluster_sol = FastMarkerCluster(data=locs_sol, name='Utility-Scale PV Stations', callback=callback_1).add_to(m)
+marker_cluster_wind = FastMarkerCluster(data=locs_wind,  name='Individual Wind Turbines', callback=callback_0).add_to(m)
+marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, name='Distributed Solar Units', options={'distance': max_cluster_distance}).add_to(m)
 
 
 
