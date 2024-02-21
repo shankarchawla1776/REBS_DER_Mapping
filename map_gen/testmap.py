@@ -10,6 +10,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
 import json
+import psycopg2
 
 load_dotenv(Path(".env"))
 
