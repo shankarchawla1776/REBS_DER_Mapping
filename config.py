@@ -1,3 +1,3 @@
 from configparser import ConfigParser 
 
-def config(filename="database.ini")
+# def config(filename="database.ini")
