@@ -9,8 +9,7 @@ import boto3
 import os                                                                                                                                                                                                          
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
-import json
-
+import psycopg2
 
 
 load_dotenv(Path(".env"))
@@ -25,62 +24,62 @@ m = folium.Map(location=us_center, zoom_start=4, zoom_control = False, scrollWhe
 
 
 
-# callback_0 = """\
-# function (row) { 
-#     var icon, marker;
-#     icon = L.AwesomeMarkers.icon({
-#         icon: "map-marker", markerColor: "red"});
-#     marker = L.marker(new L.LatLng(row[0], row[1]));
-#     marker.setIcon(icon);
-#     marker.bindPopup("Individual Wind Turbine")
-#     return marker;
-# };
-# """
-# callback_1 = """
-# function (row) {
-#     var icon, marker;
-#     icon = L.AwesomeMarkers.icon({
-#         icon: "map-marker", markerColor: "blue"});
-#     marker = L.marker(new L.LatLng(row[0], row[1]));
-#     marker.setIcon(icon);
-#     marker.bindPopup("Utility-Scale Photovoltaic Power Station ")
-#     return marker;
-# };
-# """
-# callback_2 = """
-# function (row) {
-#     var icon, marker;
-#     icon = L.AwesomeMarkers.icon({
-#         icon: "sun", markerColor: "green"});
-#     marker = L.marker(new L.LatLng(row[0], row[1]));
-#     marker.setIcon(icon);
-#     marker.bindPopup("Distributed Solar Unit")
-#     return marker;
-# };
-# """
+callback_0 = """\
+function (row) { 
+    var icon, marker;
+    icon = L.AwesomeMarkers.icon({
+        icon: "map-marker", markerColor: "red"});
+    marker = L.marker(new L.LatLng(row[0], row[1]));
+    marker.setIcon(icon);
+    marker.bindPopup("Individual Wind Turbine")
+    return marker;
+};
+"""
+callback_1 = """
+function (row) {
+    var icon, marker;
+    icon = L.AwesomeMarkers.icon({
+        icon: "map-marker", markerColor: "blue"});
+    marker = L.marker(new L.LatLng(row[0], row[1]));
+    marker.setIcon(icon);
+    marker.bindPopup("Utility-Scale Photovoltaic Power Station ")
+    return marker;
+};
+"""
+callback_2 = """
+function (row) {
+    var icon, marker;
+    icon = L.AwesomeMarkers.icon({
+        icon: "sun", markerColor: "green"});
+    marker = L.marker(new L.LatLng(row[0], row[1]));
+    marker.setIcon(icon);
+    marker.bindPopup("Distributed Solar Unit")
+    return marker;
+};
+"""
 
-def create_callback(marker_color, popup_text):
-    return """
-    function (row) { 
-        var icon, marker;
-        icon = L.AwesomeMarkers.icon({
-            icon: "map-marker", markerColor: "%s"});
-        marker = L.marker(new L.LatLng(row[0], row[1]));
-        marker.setIcon(icon);
-        marker.bindPopup("%s")
-        return marker;
-    };
-    """ % (marker_color, popup_text)
+# def create_callback(marker_color, popup_text):
+#     return """
+#     function (row) { 
+#         var icon, marker;
+#         icon = L.AwesomeMarkers.icon({
+#             icon: "map-marker", markerColor: "%s"});
+#         marker = L.marker(new L.LatLng(row[0], row[1]));
+#         marker.setIcon(icon);
+#         marker.bindPopup("%s")
+#         return marker;
+#     };
+#     """ % (marker_color, popup_text)
 
-callbacks = {
-    'Individual Wind Turbines': create_callback('red', 'Individual Wind Turbine'),
-    'Utility-Scale PV Stations': create_callback('blue', 'Utility-Scale Photovoltaic Power Station'),
-    'Distributed Solar Units': create_callback('green', 'Distributed Solar Unit')
-}
+# callbacks = {
+#     'Individual Wind Turbines': create_callback('red', 'Individual Wind Turbine'),
+#     'Utility-Scale PV Stations': create_callback('blue', 'Utility-Scale Photovoltaic Power Station'),
+#     'Distributed Solar Units': create_callback('green', 'Distributed Solar Unit')
+# }
 
-def add_marker_cluster(map_obj, data, callback):
-    marker_cluster = FastMarkerCluster(data=data, callback=callback).add_to(map_obj)
-    return marker_cluster
+# def add_marker_cluster(map_obj, data, callback):
+#     marker_cluster = FastMarkerCluster(data=data, callback=callback).add_to(map_obj)
+#     return marker_cluster
 
 
 resp_wind = s3_client.get_object(Bucket=bucket_name, Key='wind_energy_2.csv')
@@ -109,21 +108,21 @@ locs_distr_sol = CAISO_coords_sol.apply(lambda row: (row["latitude"], row["longi
 
 max_cluster_distance = 5
 
-for layer_name, callback in callbacks.items():
-    data = locals().get("locs_" + layer_name.lower().replace(' ', '_'))
-    if data:
-        add_marker_cluster(m, data, callback)
+# for layer_name, callback in callbacks.items():
+#     data = locals().get("locs_" + layer_name.lower().replace(' ', '_'))
+#     if data:
+#         add_marker_cluster(m, data, callback)
 
-# marker_cluster_sol = FastMarkerCluster(data=locs_sol, name='Utility-Scale PV Stations', callback=callback_1).add_to(m)
-# marker_cluster_wind = FastMarkerCluster(data=locs_wind,  name='Individual Wind Turbines', callback=callback_0).add_to(m)
-# marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, name='Distributed Solar Units', options={'distance': max_cluster_distance}).add_to(m)
+marker_cluster_sol = FastMarkerCluster(data=locs_sol, name='Utility-Scale PV Stations', callback=callback_1).add_to(m)
+marker_cluster_wind = FastMarkerCluster(data=locs_wind,  name='Individual Wind Turbines', callback=callback_0).add_to(m)
+marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, name='Distributed Solar Units', options={'distance': max_cluster_distance}).add_to(m)
 
 
 
 folium.LayerControl().add_to(m)
-# m.add_child(marker_cluster_distr_sol)
-# m.add_child(marker_cluster_wind)
-# m.add_child(marker_cluster_sol)
+m.add_child(marker_cluster_distr_sol)
+m.add_child(marker_cluster_wind)
+m.add_child(marker_cluster_sol)
 m.save("map_CAISO.html")
 
 CAISO_sol = util_sol_df[util_sol_df["state"] == "CA"]
