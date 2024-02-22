@@ -10,6 +10,8 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
 import psycopg2
+from data_fetching.fetch_data import fetch_data
+
 
 
 load_dotenv(Path(".env"))
@@ -82,13 +84,16 @@ function (row) {
 #     return marker_cluster
 
 
-resp_wind = s3_client.get_object(Bucket=bucket_name, Key='wind_energy_2.csv')
-wind_data = resp_wind['Body'].read().decode('utf-8')
-wind_df = pd.read_csv(io.StringIO(wind_data))
-CAISO_wind = wind_df[wind_df["t_state"] == "CA"]
-xlong_values = CAISO_wind["xlong"].tolist()
-ylat_values = CAISO_wind["ylat"].tolist()
-locs_wind = CAISO_wind.apply(lambda row: (row["ylat"], row["xlong"]), axis=1).tolist()
+data = fetch_data()
+marker_cluster_wind = FastMarkerCluster(data=data, name='Individual Wind Turbines', callback=callback_0).add_to(m)
+
+# resp_wind = s3_client.get_object(Bucket=bucket_name, Key='wind_energy_2.csv')
+# wind_data = resp_wind['Body'].read().decode('utf-8')
+# wind_df = pd.read_csv(io.StringIO(wind_data))
+# CAISO_wind = wind_df[wind_df["t_state"] == "CA"]
+# xlong_values = CAISO_wind["xlong"].tolist()
+# ylat_values = CAISO_wind["ylat"].tolist()
+# locs_wind = CAISO_wind.apply(lambda row: (row["ylat"], row["xlong"]), axis=1).tolist()
 
 
 resp_util_sol = s3_client.get_object(Bucket=bucket_name, Key='utility_solar (1).csv')
@@ -108,13 +113,9 @@ locs_distr_sol = CAISO_coords_sol.apply(lambda row: (row["latitude"], row["longi
 
 max_cluster_distance = 5
 
-# for layer_name, callback in callbacks.items():
-#     data = locals().get("locs_" + layer_name.lower().replace(' ', '_'))
-#     if data:
-#         add_marker_cluster(m, data, callback)
 
 marker_cluster_sol = FastMarkerCluster(data=locs_sol, name='Utility-Scale PV Stations', callback=callback_1).add_to(m)
-marker_cluster_wind = FastMarkerCluster(data=locs_wind,  name='Individual Wind Turbines', callback=callback_0).add_to(m)
+# marker_cluster_wind = FastMarkerCluster(data=locs_wind,  name='Individual Wind Turbines', callback=callback_0).add_to(m)
 marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, name='Distributed Solar Units', options={'distance': max_cluster_distance}).add_to(m)
 
 

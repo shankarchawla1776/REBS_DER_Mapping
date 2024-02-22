@@ -1,24 +1,23 @@
-import psycopg2 
+import psycopg2
+from data_fetching.config import config
 
-from config import config 
-
-def fetch_data(): 
+def connection(): 
     connect = None 
     try:
         params = config()
         connect = psycopg2.connect(**params)
         cursor = connect.cursor()
-    
-        cursor.execute('SELECT xlong, ylat FROM "USWTDB"')
-        rows = cursor.fetchall()
-        for i in rows: 
-            print(i[0], i[1])
+        cursor.execute('SELECT version()')
+        version = cursor.fetchone()
+        print(version)
+        cursor.close()
     except(Exception, psycopg2.DatabaseError) as error:
         print(error)
-    finally:
+    finally: 
         if connect is not None: 
             connect.close()
             print('db connection closed')
 
 if __name__ == "__main__": 
-    fetch_data()
+    connection()
+
