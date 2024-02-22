@@ -14,6 +14,7 @@ from data_fetching.fetch_data import fetch_data
 
 
 
+
 load_dotenv(Path(".env"))
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -96,36 +97,36 @@ marker_cluster_wind = FastMarkerCluster(data=data, name='Individual Wind Turbine
 # locs_wind = CAISO_wind.apply(lambda row: (row["ylat"], row["xlong"]), axis=1).tolist()
 
 
-resp_util_sol = s3_client.get_object(Bucket=bucket_name, Key='utility_solar (1).csv')
-util_sol_data = resp_util_sol['Body'].read().decode('utf-8')
-util_sol_df = pd.read_csv(io.StringIO(util_sol_data), on_bad_lines='skip', delimiter='\t')
-CAISO_sol = util_sol_df[util_sol_df["state"] == "CA"]
-locs_sol = CAISO_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
+# resp_util_sol = s3_client.get_object(Bucket=bucket_name, Key='utility_solar (1).csv')
+# util_sol_data = resp_util_sol['Body'].read().decode('utf-8')
+# util_sol_df = pd.read_csv(io.StringIO(util_sol_data), on_bad_lines='skip', delimiter='\t')
+# CAISO_sol = util_sol_df[util_sol_df["state"] == "CA"]
+# locs_sol = CAISO_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
 
 
 
-resp_distr_sol = s3_client.get_object(Bucket=bucket_name, Key='CASIO_coords.csv')
-distr_sol_data = resp_distr_sol['Body'].read().decode('utf-8')
-CAISO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
-lats_distr = CAISO_coords_sol["latitude"]
-longs_distr = CAISO_coords_sol["longitude"]
-locs_distr_sol = CAISO_coords_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
+# resp_distr_sol = s3_client.get_object(Bucket=bucket_name, Key='CASIO_coords.csv')
+# distr_sol_data = resp_distr_sol['Body'].read().decode('utf-8')
+# CAISO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
+# lats_distr = CAISO_coords_sol["latitude"]
+# longs_distr = CAISO_coords_sol["longitude"]
+# locs_distr_sol = CAISO_coords_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
 
-max_cluster_distance = 5
+# max_cluster_distance = 5
 
 
-marker_cluster_sol = FastMarkerCluster(data=locs_sol, name='Utility-Scale PV Stations', callback=callback_1).add_to(m)
-# marker_cluster_wind = FastMarkerCluster(data=locs_wind,  name='Individual Wind Turbines', callback=callback_0).add_to(m)
-marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, name='Distributed Solar Units', options={'distance': max_cluster_distance}).add_to(m)
+# marker_cluster_sol = FastMarkerCluster(data=locs_sol, name='Utility-Scale PV Stations', callback=callback_1).add_to(m)
+# # marker_cluster_wind = FastMarkerCluster(data=locs_wind,  name='Individual Wind Turbines', callback=callback_0).add_to(m)
+# marker_cluster_distr_sol = FastMarkerCluster(data=locs_distr_sol, callback=callback_2, name='Distributed Solar Units', options={'distance': max_cluster_distance}).add_to(m)
 
 
 
 folium.LayerControl().add_to(m)
-m.add_child(marker_cluster_distr_sol)
+# m.add_child(marker_cluster_distr_sol)
 m.add_child(marker_cluster_wind)
-m.add_child(marker_cluster_sol)
+# m.add_child(marker_cluster_sol)
 m.save("map_CAISO.html")
 
-CAISO_sol = util_sol_df[util_sol_df["state"] == "CA"]
+# CAISO_sol = util_sol_df[util_sol_df["state"] == "CA"]
 
-ylat = util_sol_df["latitude"].tolist()
+# ylat = util_sol_df["latitude"].tolist()

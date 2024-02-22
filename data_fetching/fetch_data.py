@@ -11,8 +11,10 @@ def fetch_data():
     
         cursor.execute('SELECT xlong, ylat FROM "USWTDB"')
         rows = cursor.fetchall()
-        for i in rows: 
-            print(i[0], i[1])
+        data = [(row[0], row[1]) for row in rows]
+        return data
+        # for i in rows: 
+        #     return i[0], i[1]
     except(Exception, psycopg2.DatabaseError) as error:
         print(error)
     finally:
@@ -21,5 +23,8 @@ def fetch_data():
             print('db connection closed')
 
 if __name__ == "__main__": 
-    fetch_data()
+    data = fetch_data()
+    with open("marker_data.js", "w") as f: 
+        f.write("var marker_data = {};".format(data))
 
+# this method exports data to js file that can be imported to html. this does not fix the issue of too much data on one file. 
