@@ -3,7 +3,7 @@ from folium import plugins
 import numpy as np 
 import pandas as pd 
 import matplotlib.pyplot as plt
-from folium.plugins import FastMarkerCluster, MarkerCluster
+from folium.plugins import FastMarkerCluster
 import io 
 import boto3 
 import os                                                                                                                                                                                                          
@@ -86,7 +86,12 @@ function (row) {
 
 
 data = fetch_data()
-marker_cluster_wind = FastMarkerCluster(data=data, name='Individual Wind Turbines', callback=callback_0).add_to(m)
+chunk_size = 1000
+chunks = [data[i:i+chunk_size] for i in range(0, len(data), chunk_size)]
+# marker_cluster_wind = FastMarkerCluster(data=data, name='Individual Wind Turbines', callback=callback_0).add_to(m)
+
+for i in chunks: 
+    marker_cluster_wind = FastMarkerCluster(data=i, name='Individual Wind Turbines', callback=callback_0).add_to(m)
 
 # resp_wind = s3_client.get_object(Bucket=bucket_name, Key='wind_energy_2.csv')
 # wind_data = resp_wind['Body'].read().decode('utf-8')

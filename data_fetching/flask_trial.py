@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 import psycopg2
 from data_fetching.config import config
 
@@ -23,12 +23,11 @@ def fetch_data(page=1, per_page=100):
             connect.close()
             print('db connection closed')
 
-@app.route('/marker_data')
-def marker_data():
-    page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 100))
-    data = fetch_data(page, per_page)
-    return jsonify(data)
+
+@app.route('/')
+def map():
+    data = fetch_data()
+    return render_template('map.html, data=data')
 
 if __name__ == "__main__":
     app.run(debug=True)
