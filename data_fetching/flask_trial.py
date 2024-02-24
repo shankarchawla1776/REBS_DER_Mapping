@@ -1,33 +1,22 @@
-from flask import Flask, jsonify, render_template
-import psycopg2
-from data_fetching.config import config
+from flask import Flask, request, jsonify
+from data_fetching.fetch_data import fetch_data
 
 app = Flask(__name__)
 
-def fetch_data(page=1, per_page=100):
-    connect = None
-    try:
-        params = config()
-        connect = psycopg2.connect(**params)
-        cursor = connect.cursor()
 
-        offset = (page - 1) * per_page
-        cursor.execute('SELECT xlong, ylat FROM "USWTDB" LIMIT %s OFFSET %s', (per_page, offset))
-        rows = cursor.fetchall()
-        data = [[row[0], row[1]] for row in rows]
-        return data
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if connect is not None:
-            connect.close()
-            print('db connection closed')
+all_data = fetch_data()
 
+@app.route('/data')
+def get_data():
+    page = request.args.get('page', default=1, type=int)
+    size = request.args.get('size', default=1000, type=int)
 
-@app.route('/')
-def map():
-    data = fetch_data()
-    return render_template('map.html, data=data')
+    start_index = (page - 1) * size
+    end_index = min(start_index + size, len(all_data))
 
-if __name__ == "__main__":
+    paginated_data = all_data[start_index:end_index]
+
+    return jsonify(paginated_data)
+
+if __name__ == '__main__':
     app.run(debug=True)
