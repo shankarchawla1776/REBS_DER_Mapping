@@ -1,4 +1,5 @@
 import psycopg2 
+import json 
 
 from data_fetching.config import config
 
@@ -23,8 +24,9 @@ def fetch_data():
             print('db connection closed')
 
 if __name__ == "__main__": 
-    print(fetch_data())
-    # data = fetch_data()
+    data = fetch_data()
+    with open("data.json", "w") as f: 
+        json.dump(data, f)
     # with open("marker_data.js", "w") as f: 
     #     f.write("var marker_data = {};".format(data))
 

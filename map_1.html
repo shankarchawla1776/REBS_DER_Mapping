@@ -25,7 +25,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_05c36f8691383278ff1cf2ed646a8918 {
+                #map_2252abb353588fe2e5a0e003cd2287d5 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -35,65 +35,67 @@
                 .leaflet-container { font-size: 1rem; }
             </style>
         
-    <script src="https://cdn.jsdelivr.net/gh/python-visualization/folium@main/folium/templates/leaflet_heat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
 </head>
 <body>
     
     
-            <div class="folium-map" id="map_05c36f8691383278ff1cf2ed646a8918" ></div>
+            <div class="folium-map" id="map_2252abb353588fe2e5a0e003cd2287d5" ></div>
         
 </body>
 <script>
     
-    
-            var map_05c36f8691383278ff1cf2ed646a8918 = L.map(
-                "map_05c36f8691383278ff1cf2ed646a8918",
-                {
-                    center: [37.0902, -95.7129],
-                    crs: L.CRS.EPSG3857,
-                    zoom: 4,
-                    zoomControl: false,
-                    preferCanvas: false,
-                    scrollWheelZoom: true,
-                }
-            );
+    var map_2252abb353588fe2e5a0e003cd2287d5 = L.map(
+        "map_2252abb353588fe2e5a0e003cd2287d5",
+        {
+            center: [37.0902, -95.7129],
+            crs: L.CRS.EPSG3857,
+            zoom: 4,
+            zoomControl: false,
+            preferCanvas: false,
+            scrollWheelZoom: true,
+        }
+    );
 
-            
+    var tile_layer_c331d1cedb98ec98d5f673fafc4803b4 = L.tileLayer(
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+    );
 
-        
-    
-            var tile_layer_89377c7b36077e39a956860d4b45595c = L.tileLayer(
-                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
-            );
-        
-    
-            tile_layer_89377c7b36077e39a956860d4b45595c.addTo(map_05c36f8691383278ff1cf2ed646a8918);
-        
-    
-            var heat_map_1c018e6d83d1d964a2469b3083d973c4 = L.heatLayer(
-                [],
-                {"blur": 15, "gradient": {"0.2": "blue", "0.4": "green", "0.6": "yellow", "0.8": "orange", "1": "red"}, "maxZoom": 18, "minOpacity": 0.5, "radius": 15}
-            );
-        
-    
-            heat_map_1c018e6d83d1d964a2469b3083d973c4.addTo(map_05c36f8691383278ff1cf2ed646a8918);
-        
-    
-            var layer_control_48bbe9f4349b7f5b5b2423b421d94f9d_layers = {
-                base_layers : {
-                    "openstreetmap" : tile_layer_89377c7b36077e39a956860d4b45595c,
-                },
-                overlays :  {
-                    "macro_element_1c018e6d83d1d964a2469b3083d973c4" : heat_map_1c018e6d83d1d964a2469b3083d973c4,
-                },
-            };
-            let layer_control_48bbe9f4349b7f5b5b2423b421d94f9d = L.control.layers(
-                layer_control_48bbe9f4349b7f5b5b2423b421d94f9d_layers.base_layers,
-                layer_control_48bbe9f4349b7f5b5b2423b421d94f9d_layers.overlays,
-                {"autoZIndex": true, "collapsed": true, "position": "topright"}
-            ).addTo(map_05c36f8691383278ff1cf2ed646a8918);
+    tile_layer_c331d1cedb98ec98d5f673fafc4803b4.addTo(map_2252abb353588fe2e5a0e003cd2287d5);
 
-        
+    var fast_marker_cluster_227242ff4810310c25c0f27a09c083ab = L.markerClusterGroup({});
+
+    // Fetch JSON data
+    $.getJSON('data.json', function(data) {
+        for (var i = 0; i < data.length; i++) {
+            var row = data[i];
+            var marker = L.marker(new L.LatLng(row[0], row[1]));
+            marker.setIcon(L.AwesomeMarkers.icon({
+                icon: "map-marker", 
+                markerColor: "red"
+            }));
+            marker.bindPopup("Individual Wind Turbine");
+            marker.addTo(fast_marker_cluster_227242ff4810310c25c0f27a09c083ab);
+        }
+        fast_marker_cluster_227242ff4810310c25c0f27a09c083ab.addTo(map_2252abb353588fe2e5a0e003cd2287d5);
+    });
+
+    var layer_control_23b490a92949414123f0f34483ffb10d_layers = {
+        base_layers : {
+            "openstreetmap" : tile_layer_c331d1cedb98ec98d5f673fafc4803b4,
+        },
+        overlays :  {
+            "Individual Wind Turbines" : fast_marker_cluster_227242ff4810310c25c0f27a09c083ab,
+        },
+    };
+    let layer_control_23b490a92949414123f0f34483ffb10d = L.control.layers(
+        layer_control_23b490a92949414123f0f34483ffb10d_layers.base_layers,
+        layer_control_23b490a92949414123f0f34483ffb10d_layers.overlays,
+        {"autoZIndex": true, "collapsed": true, "position": "topright"}
+    ).addTo(map_2252abb353588fe2e5a0e003cd2287d5);
+
 </script>
 </html>
