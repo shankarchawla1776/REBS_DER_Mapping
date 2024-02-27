@@ -1,7 +1,7 @@
 import psycopg2 
 import json 
 
-from config import config
+from data_fetching.config import config
 
 def fetch_data(wind=None): 
     connect = None 
