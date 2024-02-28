@@ -2,7 +2,7 @@ import psycopg2
 import json 
 
 from data_fetching.config import config
-
+# from config import config 
 def fetch_data(wind=None): 
     connect = None 
     try:
@@ -28,8 +28,8 @@ if __name__ == "__main__":
 
     # fetch_data(wind=True)
     # print(data)
-    # with open("data.json", "w") as f: 
-    #     json.dump(data, f)
+    with open("data.json", "w") as f: 
+        json.dump(data, f)
 
 
 
