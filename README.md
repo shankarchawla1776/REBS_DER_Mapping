@@ -1,4 +1,4 @@
-# REBS: DER Mapping in the CAISO #
+# REBS: DER Mapping #
 A project meant to geospatially map distributed energy resources (DERs) around the United States. This iteration is currently limited to the California Independent System Operator (CAISO). 
 Corrdinate data is currently stored in an AWS S3 bucket, but will be tranisitioned to a PostGIS database. 
 
