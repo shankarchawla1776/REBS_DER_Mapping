@@ -1,0 +1,14 @@
+boto3
+collections
+colorcet
+datashader
+dotenv
+holoviews
+io
+matplotlib
+numpy
+os
+pandas
+panel
+pathlib
+psycopg2

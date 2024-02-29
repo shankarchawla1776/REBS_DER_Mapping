@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np 
 from holoviews.element.tiles import EsriImagery
 from dotenv import load_dotenv
-import boto3 
+import boto3
 from pathlib import Path
 import io 
 # from map_gen.main import CAISO_coords_sol
