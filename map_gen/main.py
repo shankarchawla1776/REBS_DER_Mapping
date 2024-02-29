@@ -112,9 +112,9 @@ marker_cluster_wind = FastMarkerCluster(data=data_1, name='Individual Wind Turbi
 
 
 
-# resp_distr_sol = s3_client.get_object(Bucket=bucket_name, Key='CASIO_coords.csv')
-# distr_sol_data = resp_distr_sol['Body'].read().decode('utf-8')
-# CAISO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
+resp_distr_sol = s3_client.get_object(Bucket=bucket_name, Key='CASIO_coords.csv')
+distr_sol_data = resp_distr_sol['Body'].read().decode('utf-8')
+CAISO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
 # lats_distr = CAISO_coords_sol["latitude"]
 # longs_distr = CAISO_coords_sol["longitude"]
 # locs_distr_sol = CAISO_coords_sol.apply(lambda row: (row["latitude"], row["longitude"]), axis=1).tolist()
