@@ -1,23 +1,45 @@
-import pandas as pd
-import datashader as ds
-import datashader.transfer_functions as tf
-from datashader.utils import lnglat_to_meters
+import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds
+import intake
+from holoviews.element import tiles as hvts
+from holoviews.operation.datashader import rasterize, shade, spread
+from collections import OrderedDict as odict
 from data_fetching.fetch_data import fetch_data
-import colorcet 
+from datashader.utils import lnglat_to_meters
+from holoviews.operation import decimate
+import pandas as pd 
+from holoviews.operation.datashader import datashade
 import matplotlib.pyplot as plt
-from datashader import export
+import numpy as np 
+from holoviews.element.tiles import EsriImagery
 
+hv.extension('bokeh', logo=False)
+data = fetch_data(wind=True)
+df = pd.DataFrame(data, columns=['latitude', 'longitude'])
+df['x'], df['y'] = lnglat_to_meters(df['longitude'], df['latitude'])
+points = hv.Points(df, ['x', 'y'])
+decimated_points = decimate(points)
 
-data = fetch_data(wind=True) 
+map = EsriImagery()
 
-df = pd.DataFrame(data, columns=['ylat', 'xlong'])
-cvs = ds.Canvas(plot_width=850, plot_height=1200)
-agg = cvs.points(df, 'ylat', 'xlong')
-img = ds.tf.shade(agg, cmap=colorcet.fire, how='log')
+# Create a shaded plot
+# shaded_plot = shade(decimated_points, cmap=colorcet.fire)
+shaded_plot = map * datashade(points, cmap=colorcet.fire)
 
+shaded_plot.opts(width=1000, height=800)
 
+dashboard = pn.Column(
+    "## DER Mapping ",
+    pn.pane.HoloViews(shaded_plot),
+    align="center" 
+)
+pn.extension(template='fast')
 
-plt.figure(figsize=(10, 10))
-plt.imshow(img, aspect='auto')
-plt.axis('off')
-plt.show()
+freq = pn.widgets.FloatSlider(
+    name='Capacity', start=0, end=10, value=5
+).servable(target='sidebar')
+
+ampl = pn.widgets.FloatSlider(
+    name='Price', start=0, end=1, value=0.5
+).servable(target='sidebar')
+
+dashboard.servable()

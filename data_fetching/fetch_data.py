@@ -27,9 +27,9 @@ if __name__ == "__main__":
     data = fetch_data(wind=True)
 
     # fetch_data(wind=True)
-    # print(data)
-    with open("data.json", "w") as f: 
-        json.dump(data, f)
+    print(data)
+    # with open("data.json", "w") as f: 
+    #     json.dump(data, f)
 
 
 
