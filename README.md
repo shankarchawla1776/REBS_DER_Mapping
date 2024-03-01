@@ -12,5 +12,5 @@ Data Sources:
 To view interactive map, clone this repository then open a terminal and run: 
 
 ```
-panel serve ds.py --autoreload --show
+panel serve app.py --autoreload --show
 ```
