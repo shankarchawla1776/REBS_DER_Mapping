@@ -46,28 +46,29 @@ map = EsriImagery()
 
 # Create a shaded plot
 # shaded_plot = shade(decimated_points, cmap=colorcet.fire)
-shaded_plot = map * datashade(points, cmap=colorcet.fire)
 
-shaded_plot.opts(width=1000, height=800)
 
 stream2_visibility = pn.widgets.Checkbox(name='Show Solar', value=True)
 
-def toggle_stream2_visibility(active):
-    if active:
-        shaded_plot.options(overlay_dims=['stream2'])
-    else:
-        shaded_plot.options(overlay_dims=[])
+# def toggle_stream2_visibility(active):
+#     if active:
+#         shaded_plot = map * datashade(points, cmap=colorcet.fire) * datashade(points2, cmap=colorcet.fire)
+#     else:
+#         shaded_plot = map * datashade(points, cmap=colorcet.fire)
+#     pn.pane.HoloViews(shaded_plot).servable()
 
-# Add the callback function to the widget
-stream2_visibility.param.watch(toggle_stream2_visibility, 'value')
+shaded_plot = map * datashade(points, cmap=colorcet.fire)
 
+shaded_plot.opts(width=1250, height=800)
 
+# # Add the callback function to the widget
+# stream2_visibility.param.watch(toggle_stream2_visibility, 'value')
 
 
 dashboard = pn.Column(
     "## DER Mapping ",
     pn.pane.HoloViews(shaded_plot),
-    stream2_visibility,
+    # stream2_visibility,
     align="center" 
 )
 pn.extension(template='fast')
@@ -80,4 +81,17 @@ pricing = pn.widgets.FloatSlider(
     name='Price', start=0, end=1, value=0.5
 ).servable(target='sidebar')
 
-dashboard.servable(title="Dsitributed Energy Resources Mapping")
+d_names = ['Wind', 'Solar', 'Hydro', 'Geothermal', 'Nuclear', 'Biomass', 'Coal', 'Oil', 'Gas', 'Other']
+checkboxes = []
+
+for i in range(10): 
+    d_types = pn.widgets.Checkbox(name=d_names[i], value=True, sizing_mode='fixed', layout='column', width=400, height=20)
+    checkboxes.append(d_types)
+
+for i in checkboxes: 
+    i.servable(target='sidebar')
+
+# checkbox_column = pn.Column(*checkboxes, align="center", sizing_mode='stretch_both')
+# checkbox_column.servable(target='sidebar')
+                         
+dashboard.servable(title="Distributed Energy Resources Mapping")
