@@ -48,8 +48,11 @@ d_names = ['Wind', 'Solar', 'Hydro', 'Geothermal', 'Nuclear', 'Biomass', 'Coal',
 
 
 for i in range(ds_count): 
-    d_types = pn.widgets.Checkbox(name=d_names[i], value=True, sizing_mode='fixed', layout='column', width=400, height=20)
+    d_types = pn.widgets.Checkbox(name=d_names[i], value=True, sizing_mode='fixed', layout='column', width=400, height=40)
     checkboxes.append(d_types)
+
+for i in checkboxes:
+    pn.Row(i.controls(jslink=True), i)
 
 data = fetch_data(wind=True)
 data2 = CAISO_coords_sol
@@ -76,7 +79,6 @@ shaded_plot = map * datashade(decimated_combined_points, cmap=colorcet.kb) # => 
 
 shaded_plot.opts(width=1250, height=800)
 
-
 dashboard = pn.Column(
     "## DER Mapping ",
     pn.pane.HoloViews(shaded_plot),
@@ -96,6 +98,7 @@ pricing = pn.widgets.FloatSlider(
 
 
 for i in checkboxes: 
+    checkbox_column = pn.Column(*checkboxes, align='center')
     i.servable(target='sidebar')
           
 dashboard.servable(title="Distributed Energy Resources Mapping")
