@@ -8,7 +8,9 @@ All data is currently being hosted in the public AWS s3 bucket ```der-data-rebs`
 
 You can access data with the AWS URI:
 
-```http(s)://s3.amazonaws.com/der-data-rebs/DER_data/path/to/object```
+```
+http(s)://s3.amazonaws.com/der-data-rebs/DER_data/path/to/object
+```
 
 ### s3 Bucket Breakdown
 | File Name| Source  |
