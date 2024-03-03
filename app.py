@@ -1,20 +1,14 @@
-import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds
-import intake
+import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, numpy as np, io, matplotlib.pyplot as plt, boto3
 from holoviews.element import tiles as hvts
 from holoviews.operation.datashader import rasterize, shade, spread
 from collections import OrderedDict as odict
-from data_fetching.fetch_data import fetch_data
 from datashader.utils import lnglat_to_meters
 from holoviews.operation import decimate
-import pandas as pd 
 from holoviews.operation.datashader import datashade
-import matplotlib.pyplot as plt
-import numpy as np 
 from holoviews.element.tiles import EsriImagery, OSM, CartoLight
 from dotenv import load_dotenv
-import boto3
 from pathlib import Path
-import io 
+
 
 ds_count = 10 
 checkboxes = []
@@ -110,3 +104,4 @@ dashboard.servable(title="Distributed Energy Resources Mapping")
 #     else:
 #         shaded_plot = map * datashade(points, cmap=colorcet.fire)
 #     pn.pane.HoloViews(shaded_plot).servable()
+
