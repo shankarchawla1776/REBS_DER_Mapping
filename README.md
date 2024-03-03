@@ -1,6 +1,17 @@
 # REBS: DER Mapping #
-A project meant to geospatially map distributed energy resources (DERs) around the United States. This iteration is currently limited to the California Independent System Operator (CAISO). 
-Corrdinate data is currently stored in an AWS S3 bucket, but will be tranisitioned to a PostGIS database. 
+A project to geospatially map distributed energy resources (DERs) around the United States. This iteration currently is limited to three types of data: 
+- Battery Storage
+- Utility Solar
+- Distributed Solar
+All data is currently being hosted in the public AWS s3 bucket ```der-data-rebs```. 
+
+### s3 Bucket Breakdown
+| File Name| Source  |
+| -------- | ------- |
+| January  | $250    |
+| February | $80     |
+| March    | $420    |
+
 
 Data Sources: 
 - Wind Turbines - USTWDB: https://eerscmap.usgs.gov/uswtdb/
@@ -10,7 +21,6 @@ Data Sources:
 
 
 To view interactive map, clone this repository then open a terminal and run: 
-
 ```
 panel serve app.py --autoreload --show
 ```
