@@ -8,7 +8,7 @@ All data is currently being hosted in the public AWS s3 bucket ```der-data-rebs`
 ### s3 Bucket Breakdown
 | File Name| Source  |
 | -------- | ------- |
-| January  | $250    |
+| DER_data/battery_storage.csv  | 123    |
 | February | $80     |
 | March    | $420    |
 
