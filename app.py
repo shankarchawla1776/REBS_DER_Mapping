@@ -8,35 +8,18 @@ from holoviews.operation.datashader import datashade
 from holoviews.element.tiles import EsriImagery, OSM, CartoLight
 from dotenv import load_dotenv
 from pathlib import Path
+from data_fetching.fetch_data import fetch_data
 
 
-ds_count = 10 
+ds_count = 10
+act_count = 3
 checkboxes = []
-load_dotenv(Path(".env"))
 
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-bucket_name = 'dermod'
-s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-
-resp_distr_sol = s3_client.get_object(Bucket=bucket_name, Key='CASIO_coords.csv')
-distr_sol_data = resp_distr_sol['Body'].read().decode('utf-8')
-CAISO_coords_sol = pd.read_csv(io.StringIO(distr_sol_data), on_bad_lines='skip')
 
 hv.extension('bokeh', logo=False)
 
-def update_opacity(active, alpha):
-    if active:
-        return alpha
-    else:
-        return 0
 
-alpha_values = [0.8] * ds_count
-
-def update_plot(*checkbox_values):
-    alpha = [update_opacity(active, alpha) for active, alpha in zip(checkbox_values, alpha_values)]
-    decimated_combined_points.opts(alpha=alpha)
 
 d_names = ['Wind', 'Solar', 'Hydro', 'Geothermal', 'Nuclear', 'Biomass', 'Coal', 'Oil', 'Gas', 'Other']
 
@@ -48,20 +31,39 @@ for i in range(ds_count):
 for i in checkboxes:
     pn.Row(i.controls(jslink=True), i)
 
-data = fetch_data(wind=True)
-data2 = CAISO_coords_sol
-dfs = [pd.DataFrame(data, columns=['latitude', 'longitude']), 
-              pd.DataFrame(data2, columns=['latitude', 'longitude'])]
+fetch_params = [
+    {'wind': True, 'solar': False, 'battery': False},
+    {'wind': False, 'solar': True, 'battery': False},
+    {'wind': False, 'solar': False, 'battery': True}
+]
+
+dfs = []
+for params in fetch_params: 
+    data = fetch_data(**params)
+    dfs.append(pd.DataFrame(data, columns=['latitude', 'longitude']))
+
+df1, df2, df3 = dfs
+
+# Convert coordinates
+for df in [df1, df2, df3]:
+    df['x'], df['y'] = lnglat_to_meters(df['longitude'], df['latitude'])
+
+# data = fetch_data(wind=True)
+# data2 = datasets["dataset_2"]
+# dfs = [pd.DataFrame(data, columns=['latitude', 'longitude']), 
+#               pd.DataFrame(data2, columns=['latitude', 'longitude'])]
               
-df1 = pd.DataFrame(data, columns=['latitude', 'longitude'])
-df2 = pd.DataFrame(data2, columns=['latitude', 'longitude'])
+# df1 = pd.DataFrame(data, columns=['latitude', 'longitude'])
+# df2 = pd.DataFrame(data2, columns=['latitude', 'longitude'])
 
-df1['x'], df1['y'] = lnglat_to_meters(df1['longitude'], df1['latitude'])
+# df1['x'], df1['y'] = lnglat_to_meters(df1['longitude'], df1['latitude'])
 
-df2['x'], df2['y'] = lnglat_to_meters(df2['longitude'], df2['latitude'])
+# df2['x'], df2['y'] = lnglat_to_meters(df2['longitude'], df2['latitude'])
 
 
-points_combined = pd.concat([df1, df2])
+# points_combined = pd.concat([df1, df2])
+points_combined = pd.concat(dfs)
+# combined_points = hv.Points(points_combined, ['x', 'y'])
 combined_points = hv.Points(points_combined, ['x', 'y'])
 
 
@@ -105,3 +107,31 @@ dashboard.servable(title="Distributed Energy Resources Mapping")
 #         shaded_plot = map * datashade(points, cmap=colorcet.fire)
 #     pn.pane.HoloViews(shaded_plot).servable()
 
+# def update_opacity(active, alpha):
+#     if active:
+#         return alpha
+#     else:
+#         return 0
+
+# alpha_values = [0.8] * ds_count
+
+# def update_plot(*checkbox_values):
+#     alpha = [update_opacity(active, alpha) for active, alpha in zip(checkbox_values, alpha_values)]
+#     decimated_combined_points.opts(alpha=alpha)
+
+# load_dotenv(Path(".env"))
+
+# AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+# AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+# bucket_name = 'der-data-rebs'
+# s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+
+# keys = ['DER_data/battery_storage.csv', 'DER_data/distributed_solar.csv', 'DER_data/utility_solar.csv']
+# datasets = {} 
+# for i, key in enumerate(keys):
+#     var_name = f"dataset_{i+1}"
+#     resp_data = s3_client.get_object(Bucket=bucket_name, Key=key)
+#     data = resp_data['Body'].read().decode('utf-8')
+
+#     datasets[var_name] = pd.read_csv(io.StringIO(data), on_bad_lines='skip')

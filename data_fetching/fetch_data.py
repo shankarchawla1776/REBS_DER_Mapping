@@ -3,7 +3,7 @@ import json
 
 from data_fetching.config import config
 # from config import config 
-def fetch_data(wind=None): 
+def fetch_data(wind=None, solar=None, battery=None, utility=None): 
     connect = None 
     try:
         params = config()
@@ -11,6 +11,8 @@ def fetch_data(wind=None):
         cursor = connect.cursor()
         if wind:
             cursor.execute('SELECT ylat, xlong FROM "USWTDB"')
+        if solar: 
+            cursor.execute('SELECT latitude, longitude FROM "Distributed_Solar')
         rows = cursor.fetchall()
         data = [(row[0], row[1]) for row in rows]
         return data
@@ -27,7 +29,7 @@ if __name__ == "__main__":
     data = fetch_data(wind=True)
 
     # fetch_data(wind=True)
-    print(data)
+    # print(data)
     # with open("data.json", "w") as f: 
     #     json.dump(data, f)
 
