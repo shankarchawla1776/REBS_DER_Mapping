@@ -12,7 +12,7 @@ def fetch_data(wind=None, solar=None, battery=None, utility=None):
         if wind:
             cursor.execute('SELECT ylat, xlong FROM "USWTDB"')
         if solar: 
-            cursor.execute('SELECT latitude, longitude FROM "Distributed_Solar')
+            cursor.execute('SELECT latitude, longitude FROM "Distributed_Solar"')
         rows = cursor.fetchall()
         data = [(row[0], row[1]) for row in rows]
         return data
