@@ -1,42 +1,46 @@
 import psycopg2 
-import json 
-
 from data_fetching.config import config
-# from config import config 
-def fetch_data(wind=None, solar=None, battery=None, utility=None): 
-    connect = None 
-    try:
-        params = config()
-        connect = psycopg2.connect(**params)
-        cursor = connect.cursor()
-        if wind:
-            cursor.execute('SELECT ylat, xlong FROM "USWTDB"')
-        if solar: 
-            cursor.execute('SELECT latitude, longitude FROM "Distributed_Solar"')
-        rows = cursor.fetchall()
-        data = [(row[0], row[1]) for row in rows]
+
+class DataFetcher: 
+
+    def __init__(self): 
+        self.connection = None
+    
+    def connect(self):
+        try: 
+            params = config()
+            self.connection = psycopg2.connect(**params)
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
+    def fetch_data(self, data=None): 
+        queries = {
+            "wind_turbines": 'SELECT ylat, xlong FROM "USWTDB"',
+            "distributed_solar": 'SELECT latitude, longitude FROM "Distributed_Solar"'
+        }
+
+        if data not in queries:
+            raise ValueError("Data does not exist")
+    
+        try: 
+            if self.connection is None:
+                self.connect()
+            # self.connect = psycopg2.connect(**config())
+            cursor = self.connection.cursor()
+            cursor.execute(queries[data])
+            rows = cursor.fetchall()
+            data = [(row[0], row[1]) for row in rows]
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
         return data
-        # for i in rows: 
-        #     return i[0], i[1]
-    except(Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if connect is not None: 
-            connect.close()
+    
+    def close(self): 
+        if self.connection is not None: 
+            self.connection.close()
             print('db connection closed')
 
 if __name__ == "__main__": 
-    data = fetch_data(wind=True)
+    data_fetcher = DataFetcher()
+    data_fetcher.connect()
+    wind_data = data_fetcher.fetch_data(data="wind_turbines")
 
-    # fetch_data(wind=True)
-    # print(data)
-    # with open("data.json", "w") as f: 
-    #     json.dump(data, f)
-
-
-
-
-    # with open("marker_data.js", "w") as f: 
-    #     f.write("var marker_data = {};".format(data))
-
-# this method exports data to js file that can be imported to html. this does not fix the issue of too much data on one file. 
