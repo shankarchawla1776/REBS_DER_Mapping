@@ -9,7 +9,7 @@ from holoviews.element.tiles import EsriImagery, OSM, CartoLight
 from dotenv import load_dotenv
 from pathlib import Path
 from data_fetching.fetch_data import DataFetcher
-
+from bokeh.models import GeoJSONDataSource
 
 checkboxes = []
 
@@ -37,12 +37,11 @@ class DERMapping:
         ).servable(target='sidebar')
     
     def transmission_lines(self, file_path): 
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-        return data
+        geo_data = GeoJSONDataSource(geojson=file_path)
+        return geo_data
 
     def geojson_to_poly(self, data):
-        gdf = gpd.GeoDataFrame.from_features(data['features'])
+        gdf = gpd.GeoDataFrame.from_features(data['Features'])
         return hv.Polygons(gdf, vdims=['name'])
     
     def fetch_data(self): 
@@ -67,8 +66,8 @@ class DERMapping:
     def gen_dashboard(self):         
         self.toggles()
         shaded_plot = self.fetch_data()
-        geojson_data = self.transmission_lines(resp_data)
-        overlay = self.geojson_to_poly(geojson_data)
+        geo_data = self.transmission_lines(resp_data)
+        overlay = self.geojson_to_poly(geo_data)
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot * overlay),
