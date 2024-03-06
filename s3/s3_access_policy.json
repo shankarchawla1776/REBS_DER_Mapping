@@ -8,7 +8,7 @@
                 "s3:GetObject"
             ],
             "Resource": [
-                "arn:aws:s3:::dermod/*"
+                "arn:aws:s3:::der-data-rebs/*"
             ]
         }
     ]
