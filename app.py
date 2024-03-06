@@ -12,7 +12,7 @@ from data_fetching.fetch_data import DataFetcher
 from bokeh.models import GeoJSONDataSource
 
 checkboxes = []
-
+#next goal = geojson configuration
 load_dotenv(Path(".env"))
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -36,14 +36,6 @@ class DERMapping:
             name='Price', start=0, end=1, value=0.5
         ).servable(target='sidebar')
     
-    def transmission_lines(self, file_path): 
-        geo_data = GeoJSONDataSource(geojson=file_path)
-        return geo_data
-
-    def geojson_to_poly(self, data):
-        gdf = gpd.GeoDataFrame.from_features(data['Features'])
-        return hv.Polygons(gdf, vdims=['name'])
-    
     def fetch_data(self): 
         data = self.data_fetching.fetch_data(data="wind_turbines")
         df = pd.DataFrame(data, columns=['latitude', 'longitude'])
@@ -51,14 +43,16 @@ class DERMapping:
         points = hv.Points(df, ['x', 'y'])
         decimated_points = decimate(points)
         shaded_plot = self.map * datashade(decimated_points, cmap=colorcet.kb)
-        shaded_plot.opts(width=1250, height=800)
+        shaded_plot.opts(width=1450, height=800)
         return shaded_plot
      
     def toggles(self): 
         self.checkboxes = []
         self.der_names = ['Wind', 'Solar', 'Hydro', 'Geothermal', 'Nuclear', 'Biomass', 'Coal', 'Oil', 'Gas', 'Other']
         for i in self.der_names: 
+            checkbox = pm.Boolean(default=True)
             checkbox = pn.widgets.Checkbox(name=i, value=True, sizing_mode='fixed', layout='column', width=400, height=40)
+    
             self.checkboxes.append(checkbox)
         for j in self.checkboxes:
             j.servable(target='sidebar')
@@ -66,14 +60,13 @@ class DERMapping:
     def gen_dashboard(self):         
         self.toggles()
         shaded_plot = self.fetch_data()
-        geo_data = self.transmission_lines(resp_data)
-        overlay = self.geojson_to_poly(geo_data)
         dashboard = pn.Column(
             "## DER Mapping ",
-            pn.pane.HoloViews(shaded_plot * overlay),
+            pn.pane.HoloViews(shaded_plot),
             align="center"
         ).servable(title="DER")
         return dashboard
+    
 
 der_mapper = DERMapping()
 dashboard = der_mapper.gen_dashboard()
