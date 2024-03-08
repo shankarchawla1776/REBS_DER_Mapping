@@ -12,7 +12,8 @@ from data_fetching.fetch_data import DataFetcher
 from bokeh.models import GeoJSONDataSource
 
 checkboxes = []
-#next goal = geojson configuration
+#next goal = geojson configuration => consider creating one large data file with a column dedicated to type. this would be easier for toggles. 
+#try .shp file
 load_dotenv(Path(".env"))
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -42,7 +43,7 @@ class DERMapping:
         df['x'], df['y'] = lnglat_to_meters(df['longitude'], df['latitude'])
         points = hv.Points(df, ['x', 'y'])
         decimated_points = decimate(points)
-        shaded_plot = self.map * datashade(decimated_points, cmap=colorcet.kb)
+        shaded_plot = self.map * datashade(decimated_points,cmap='#560000') #cmap=colorcet.kb)
         shaded_plot.opts(width=1450, height=800)
         return shaded_plot
      

@@ -12,16 +12,14 @@ class DataFetcher:
             self.connection = psycopg2.connect(**params)
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
-
+            
     def fetch_data(self, data=None): 
         queries = {
             "wind_turbines": 'SELECT ylat, xlong FROM "USWTDB"',
             "distributed_solar": 'SELECT latitude, longitude FROM "Distributed_Solar"'
         }
-
         if data not in queries:
             raise ValueError("Data does not exist")
-    
         try: 
             if self.connection is None:
                 self.connect()
