@@ -17,16 +17,15 @@ checkboxes = []
 load_dotenv(Path(".env"))
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-bucket_name = 'der-data-rebs'
 s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-resp_data = s3_client.get_object(Bucket=bucket_name, Key='transmission_lines.geojson')
 
 hv.extension('bokeh', logo=False)
 pn.extension(template='fast')
 
 class DERMapping: 
     def __init__(self): 
-
+        self.bucket_name = 'der-data-rebs'
+        self.response = s3_client.get_object(Bucket=self.bucket_name, Key='DER_data/full_coordinates.csv')
         self.data_fetching = DataFetcher()
         self.map = OSM()
         self.checkboxes = []
@@ -36,31 +35,39 @@ class DERMapping:
         self.pricing_slider = pn.widgets.FloatSlider(
             name='Price', start=0, end=1, value=0.5
         ).servable(target='sidebar')
-    
-    def fetch_data(self): 
-        data = self.data_fetching.fetch_data(data="wind_turbines")
-        df = pd.DataFrame(data, columns=['latitude', 'longitude'])
-        df['x'], df['y'] = lnglat_to_meters(df['longitude'], df['latitude'])
-        points = hv.Points(df, ['x', 'y'])
+        self.d_types = ['distributed_solar', 'wind_turbines', 'utility_solar']
+    def data(self): 
+        x = pd.DataFrame(columns=['latitude', 'longitude']) 
+        self.d = []
+        for query in self.d_types:
+            df = self.data_fetching.fetch_data(data=query)
+            df = pd.DataFrame(df, columns=['latitude', 'longitude'])
+            self.d.append(df)
+        # x = len(self.d)
+        # for i in range(x):
+        combined_df = pd.concat([self.d[0], self.d[1]], ignore_index=True) # FIXME: for some reason, not every term is included. => Set up pricing API then come back. 
+        # combined_df = pd.concat([self.d], ignore_index=True)
+        combined_df['x'], combined_df['y'] = lnglat_to_meters(combined_df['longitude'], combined_df['latitude'])
+        points = hv.Points(combined_df, ['x', 'y'])
+        print(combined_df.head())
         decimated_points = decimate(points)
-        shaded_plot = self.map * datashade(decimated_points,cmap='#560000') #cmap=colorcet.kb)
+        shaded_plot = self.map * datashade(decimated_points, cmap='#560000')  # cmap=colorcet.kb)
         shaded_plot.opts(width=1450, height=800)
         return shaded_plot
-     
+
+
     def toggles(self): 
         self.checkboxes = []
-        self.der_names = ['Wind', 'Solar', 'Hydro', 'Geothermal', 'Nuclear', 'Biomass', 'Coal', 'Oil', 'Gas', 'Other']
-        for i in self.der_names: 
+        for i in self.d_types: 
             checkbox = pm.Boolean(default=True)
             checkbox = pn.widgets.Checkbox(name=i, value=True, sizing_mode='fixed', layout='column', width=400, height=40)
-    
             self.checkboxes.append(checkbox)
         for j in self.checkboxes:
             j.servable(target='sidebar')
 
     def gen_dashboard(self):         
         self.toggles()
-        shaded_plot = self.fetch_data()
+        shaded_plot = self.data()
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
