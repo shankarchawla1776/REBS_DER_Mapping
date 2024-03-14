@@ -1,6 +1,10 @@
 import psycopg2
 from data_fetching.config import config
 
+"""
+Server no longer active
+"""
+
 def connection(): 
     connect = None 
     try:

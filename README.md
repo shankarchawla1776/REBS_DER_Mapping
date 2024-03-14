@@ -19,6 +19,7 @@ http(s)://s3.amazonaws.com/der-data-rebs/path/to/object
 | DER_data/distributed_solar.csv | [Microsoft us_der_dataset](https://github.com/microsoft/us_der_dataset)      |
 | DER_data/utility_solar.csv    | [Microsoft us_der_dataset](https://github.com/microsoft/us_der_dataset)     |
 | DER_data/wind_turbines.csv   | [USWTDB](https://eerscmap.usgs.gov/uswtdb/)     |
+| DER_data/full_coordinates.csv |Compilation|
 | transmission_lines.geojson | [EIA - U.S. Energy Atlas](https://atlas.eia.gov/datasets/bd24d1a282c54428b024988d32578e59_0/explore?location=39.011484%2C-107.389808%2C7.33)     |
 
 To view interactive map, clone this repository, install the dependencies listed in ```dependencies.txt```, then open a terminal and run: 

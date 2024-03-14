@@ -1,5 +1,9 @@
 from configparser import ConfigParser 
 
+"""
+Server no longer active
+"""
+
 def config(filename="db.ini", section="postgresql"): 
     parser = ConfigParser()
     parser.read(filename)

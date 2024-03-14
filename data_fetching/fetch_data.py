@@ -1,5 +1,10 @@
 import psycopg2 
 from data_fetching.config import config
+# from config import config
+
+"""
+Server no longer active
+"""
 
 class DataFetcher: 
 
@@ -16,7 +21,8 @@ class DataFetcher:
     def fetch_data(self, data=None): 
         queries = {
             "wind_turbines": 'SELECT ylat, xlong FROM "USWTDB"',
-            "distributed_solar": 'SELECT latitude, longitude FROM "Distributed_Solar"'
+            "distributed_solar": 'SELECT latitude, longitude FROM "Distributed_Solar"',
+            "utility_solar": 'SELECT latitude, longitude FROM "Utility_Solar"' 
         }
         if data not in queries:
             raise ValueError("Data does not exist")
@@ -41,4 +47,5 @@ if __name__ == "__main__":
     data_fetcher = DataFetcher()
     data_fetcher.connect()
     wind_data = data_fetcher.fetch_data(data="wind_turbines")
+    print(wind_data)
 
