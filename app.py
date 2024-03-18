@@ -1,4 +1,4 @@
-import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, numpy as np, io, matplotlib.pyplot as plt, boto3, json, geopandas as gpd
+import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, boto3, gridstatus
 from holoviews.element import tiles as hvts
 from holoviews.operation.datashader  import rasterize, shade, spread
 from collections import OrderedDict as odict
@@ -35,7 +35,9 @@ class DERMapping:
         self.pricing_slider = pn.widgets.FloatSlider(
             name='Price', start=0, end=1, value=0.5
         ).servable(target='sidebar')
+        # self.
         self.d_types = ['distributed_solar', 'wind_turbines', 'utility_solar']
+
     def data(self): 
         x = pd.DataFrame(columns=['latitude', 'longitude']) 
         self.d = []
@@ -54,8 +56,7 @@ class DERMapping:
         shaded_plot = self.map * datashade(decimated_points, cmap='#560000')  # cmap=colorcet.kb)
         shaded_plot.opts(width=1450, height=800)
         return shaded_plot
-
-
+    
     def toggles(self): 
         self.checkboxes = []
         for i in self.d_types: 
@@ -72,11 +73,11 @@ class DERMapping:
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
             align="center"
-        ).servable(title="DER")
+        ).servable(title="REBS DER Mapping")
         return dashboard
     
+    # def gsconfig(self): 
+
 
 der_mapper = DERMapping()
 dashboard = der_mapper.gen_dashboard()
-
-
