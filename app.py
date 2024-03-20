@@ -40,6 +40,7 @@ class DERMapping:
         ).servable(target='sidebar')
        
         self.d_types = ['distributed_solar', 'wind_turbines', 'utility_solar']
+        self.status_text = pn.widgets.StaticText(name='Status', value='', width=200)
 
     def data(self): 
         x = pd.DataFrame(columns=['latitude', 'longitude']) 
@@ -105,12 +106,11 @@ class DERMapping:
         else: 
             self.inside = False
 
-        self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200)
-        if self.inside: 
-            self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
-        return self.status_text
-
-
+        # self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200)
+        # if self.inside: 
+        #     self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
+        # return self.status_text
+        return self.inside # -> bool 
 
 
     def gen_dashboard(self):         
@@ -118,14 +118,18 @@ class DERMapping:
         shaded_plot = self.data()
         plot = pn.pane.HoloViews(shaded_plot).get_root()
         
-        plot.on_event('motion_notify_event', self.move)
+        plot.on_event('motion_notify_event', self.move) # -> has to be an issue with the cursor tracking. 
         
         # self.status_text = pn.widgets.Text(name='Status', value='', width=200)
-        text = self.move
+        inside = self.move 
+        if inside: 
+            self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
+        else: 
+            self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200)
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
-            text,
+            self.status_text,
             align="center"
         ).servable(title="REBS DER Mapping")
         return dashboard
