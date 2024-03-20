@@ -1,4 +1,4 @@
-import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, boto3, gridstatus, geopandas as gpd, fiona 
+import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, boto3, geopandas as gpd 
 from holoviews.element import tiles as hvts
 from holoviews.operation.datashader  import rasterize, shade, spread
 from collections import OrderedDict as odict
@@ -9,9 +9,8 @@ from holoviews.element.tiles import EsriImagery, OSM, CartoLight
 from dotenv import load_dotenv
 from pathlib import Path
 from data_fetching.fetch_data import DataFetcher
-from bokeh.models import GeoJSONDataSource
-from shapely.geometry import Point
-from bokeh.io import show 
+from shapely.geometry import Point 
+
 
 checkboxes = []
 #next goal = geojson configuration => consider creating one large data file with a column dedicated to type. this would be easier for toggles. 
@@ -39,7 +38,7 @@ class DERMapping:
         self.pricing_slider = pn.widgets.FloatSlider(
             name='Price', start=0, end=1, value=0.5
         ).servable(target='sidebar')
-        # self.
+       
         self.d_types = ['distributed_solar', 'wind_turbines', 'utility_solar']
 
     def data(self): 
@@ -106,10 +105,13 @@ class DERMapping:
         else: 
             self.inside = False
 
-        self.status_text = pn.widgets.StaticText(name='Status', value='Test', width=200)
-        if self.inside == True: 
+        self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200)
+        if self.inside: 
             self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
-        self.status_text.servable(target='sidebar')
+        return self.status_text
+
+
+
 
     def gen_dashboard(self):         
         self.toggles()
@@ -117,11 +119,13 @@ class DERMapping:
         plot = pn.pane.HoloViews(shaded_plot).get_root()
         
         plot.on_event('motion_notify_event', self.move)
+        
         # self.status_text = pn.widgets.Text(name='Status', value='', width=200)
-
+        text = self.move
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
+            text,
             align="center"
         ).servable(title="REBS DER Mapping")
         return dashboard
@@ -130,4 +134,5 @@ class DERMapping:
 
 der_mapper = DERMapping()
 dashboard = der_mapper.gen_dashboard()
+
 

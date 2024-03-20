@@ -27,17 +27,16 @@ def is_point_in_shapefile(data_file, shapefile, latitude, longitude):
     else:
         return False
 
-
-
 data_file = 'shape_files/csv/Independent_System_Operator_-7181045740166301968 (1).csv'
 shapefile = 'shape_files/Independent_System_Operators.shp'
 latitude = 34.030149 
 longitude = -118.178751 
 
 if is_point_in_shapefile(data_file, shapefile, latitude, longitude):
-  print("Your point is within a shape in the file.")
+    print("Your point is within a shape in the file.")
 else:
-  print("Your point is not within any shapes in the file.")
+    print("Your point is not within any shapes in the file.")
+
 
 gdf_shape = gpd.read_file(shapefile)
 
@@ -48,8 +47,15 @@ folium.GeoJson(gdf_shape.to_json(), style_function=lambda feature: {
     'opacity': 1
 }).add_to(m)
 
-marker = folium.Marker([latitude, latitude], popup='Selected Point')
-marker.add_to(map)
+marker = folium.Marker([latitude, longitude], popup='Selected Point')
+marker.add_to(m)
+
+# def on_click(event):
+#     lat = event.latitude 
+#     long = event.longitude
+    # print(f"Latitude: {lat}, Longitude: {lon}")
+
+
 
 m.add_child(folium.map.LayerControl())
 m.save('map.html')
