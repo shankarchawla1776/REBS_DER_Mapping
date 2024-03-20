@@ -81,33 +81,47 @@ class DERMapping:
         self.NYISO = self.shp_data[self.shp_data['NAME'] == 'NEW YORK INDEPENDENT SYSTEM OPERATOR']
         self.ISONE = self.shp_data[self.shp_data['NAME'] == 'ISO NEW ENGLAND INC.']
         self.ISOs = [self.CAISO, self.PJM, self.NYISO, self.ISONE]
-    
-        if event.x is not None and event.y is not None:
-            x, y = event.x, event.y
-            # lon, lat = lnglat_to_meters.invert(x, y)
-            point = Point(x, y)
-            # for iso_name, iso_polygon in zip(["CAISO", "PJM", "NYISO", "ISONE"], self.ISOs):
-            for iso_polygon in self.ISOs:
-                if iso_polygon.geometry.contains(point).any():
-                    # print(f"You are inside") 
-                    tooltip_text = f"You are inside {iso_polygon['NAME'].values[0]}"
-                    self.plot.hover.tooltips = [(tooltip_text, "@x, @y")]
-                    return
-        else:
-            self.plot.hover.tooltips = None
+        names = ['CAISO', 'PJM', 'NYISO', 'ISONE']
+        self.inside = None
+        point_crs = {'init': 'epsg:4326'}
+
+        x, y = event.xdata, event.ydata
+        # point = Point(x, y)
+        # for iso in self.ISOs: 
+        #     if iso.geometry.contains(point).any(): 
+        #         print("You are inside an ISO")
+        #         return
+            
+        if self.shp_data.crs != point_crs: 
+            print("Warning: CRS mismatch. Reprojecting point to match shapefile CRS.")
+            self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
+            self.df_point = self.df_point.to_crs(self.shp_data.crs)
+        else: 
+            self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
+        for iso in self.ISOs:
+            joined = gpd.sjoin(self.df_point, iso, how='inner')
+
+        if joined.shape[0] > 0: 
+            self.inside = True
+        else: 
+            self.inside = False
+
+        self.status_text = pn.widgets.StaticText(name='Status', value='Test', width=200)
+        if self.inside == True: 
+            self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
+        self.status_text.servable(target='sidebar')
 
     def gen_dashboard(self):         
         self.toggles()
         shaded_plot = self.data()
         plot = pn.pane.HoloViews(shaded_plot).get_root()
-
+        
         plot.on_event('motion_notify_event', self.move)
         # self.status_text = pn.widgets.Text(name='Status', value='', width=200)
 
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
-            # self.status_text,
             align="center"
         ).servable(title="REBS DER Mapping")
         return dashboard
