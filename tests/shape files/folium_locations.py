@@ -9,7 +9,7 @@ def is_point_in_shapefile(data_file, shapefile, latitude, longitude):
     try:
         df_shape = gpd.read_file(shapefile)
     except FileNotFoundError:
-        print(f"Error: Shapefile '{shapefile}' not found.")
+        print(f"Error: Shape file '{shapefile}' not found.")
         return False
 
     point_crs = {'init': 'epsg:4326'} 

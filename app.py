@@ -1,4 +1,4 @@
-import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, boto3, geopandas as gpd 
+import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, boto3, geopandas as gpd, gridstatus
 from holoviews.element import tiles as hvts
 from holoviews.operation.datashader  import rasterize, shade, spread
 from collections import OrderedDict as odict
@@ -24,6 +24,7 @@ hv.extension('bokeh', logo=False)
 pn.extension(template='fast')
 
 class DERMapping: 
+
     def __init__(self): 
         self.bucket_name = 'der-data-rebs'
         self.response = s3_client.get_object(Bucket=self.bucket_name, Key='DER_data/full_coordinates.csv')
@@ -40,7 +41,15 @@ class DERMapping:
         ).servable(target='sidebar')
        
         self.d_types = ['distributed_solar', 'wind_turbines', 'utility_solar']
-        self.status_text = pn.widgets.StaticText(name='Status', value='', width=200)
+        # self.status_text = pn.widgets.StaticText(name='Status', value='', width=200)
+        self.shp_data = gpd.read_file('shape_files/Independent_System_Operators.shp') 
+        self.CAISO = self.shp_data[self.shp_data['NAME'] == 'CALIFORNIA INDEPENDENT SYSTEM OPERATOR']
+        self.PJM = self.shp_data[self.shp_data['NAME'] == 'PJM INTERCONNECTION, LLC']
+        self.NYISO = self.shp_data[self.shp_data['NAME'] == 'NEW YORK INDEPENDENT SYSTEM OPERATOR']
+        self.ISONE = self.shp_data[self.shp_data['NAME'] == 'ISO NEW ENGLAND INC.']
+        self.ISOs = [self.CAISO, self.PJM, self.NYISO, self.ISONE]
+        names = ['CAISO', 'PJM', 'NYISO', 'ISONE']
+
 
     def data(self): 
         x = pd.DataFrame(columns=['latitude', 'longitude']) 
@@ -75,14 +84,8 @@ class DERMapping:
     
     def move(self, event):
 
-        self.shp_data = gpd.read_file('shape_files/Independent_System_Operators.shp') 
-        self.CAISO = self.shp_data[self.shp_data['NAME'] == 'CALIFORNIA INDEPENDENT SYSTEM OPERATOR']
-        self.PJM = self.shp_data[self.shp_data['NAME'] == 'PJM INTERCONNECTION, LLC']
-        self.NYISO = self.shp_data[self.shp_data['NAME'] == 'NEW YORK INDEPENDENT SYSTEM OPERATOR']
-        self.ISONE = self.shp_data[self.shp_data['NAME'] == 'ISO NEW ENGLAND INC.']
-        self.ISOs = [self.CAISO, self.PJM, self.NYISO, self.ISONE]
-        names = ['CAISO', 'PJM', 'NYISO', 'ISONE']
-        self.inside = None
+
+        # self.inside = None
         point_crs = {'init': 'epsg:4326'}
 
         x, y = event.xdata, event.ydata
@@ -98,10 +101,10 @@ class DERMapping:
             self.df_point = self.df_point.to_crs(self.shp_data.crs)
         else: 
             self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
-        for iso in self.ISOs:
-            joined = gpd.sjoin(self.df_point, iso, how='inner')
-
-        if joined.shape[0] > 0: 
+        # for iso in self.ISOs:
+        #     joined = gpd.sjoin(self.df_point, iso, how='inner')
+        joined = gpd.sjoin(self.df_point, self.CAISO, how='inner')
+        if joined.shape[0] > 0: # FIXME: -> while?
             self.inside = True
         else: 
             self.inside = False
@@ -111,31 +114,33 @@ class DERMapping:
         #     self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
         # return self.status_text
         return self.inside # -> bool 
-
+    
+    def handlers(self): 
+        pass 
 
     def gen_dashboard(self):         
         self.toggles()
         shaded_plot = self.data()
         plot = pn.pane.HoloViews(shaded_plot).get_root()
-        
         plot.on_event('motion_notify_event', self.move) # -> has to be an issue with the cursor tracking. 
+
+        # caiso = gridstatus.CAISO() 
+        # caiso_load = caiso.get_load(start="Jan 1, 2021", end="Feb 1, 2021")
+        # load_mean = caiso_load.mean()
         
-        # self.status_text = pn.widgets.Text(name='Status', value='', width=200)
-        inside = self.move 
-        if inside: 
-            self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
+        if self.move: # FIXME: -> while? 
+            pn.widgets.StaticText(name='Status', value="test", width=200).servable()
+            # pn.widgets.StaticText(name='Status', value=str(load_mean), width=200).servable()
         else: 
-            self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200)
+            self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200).servable()
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
-            self.status_text,
+            # self.status_text,
             align="center"
         ).servable(title="REBS DER Mapping")
         return dashboard
     
-
-
 der_mapper = DERMapping()
 dashboard = der_mapper.gen_dashboard()
 
