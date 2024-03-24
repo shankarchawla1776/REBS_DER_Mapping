@@ -31,7 +31,7 @@ class DERMapping:
         self.data_fetching = DataFetcher()
         self.map = OSM()
         self.checkboxes = []
-
+        self.dimensions = [1300, 800]
         self.capacity_slider = pn.widgets.FloatSlider(
             name='Capacity', start=0, end=10, value=5
         ).servable(target='sidebar')
@@ -39,9 +39,9 @@ class DERMapping:
         self.pricing_slider = pn.widgets.FloatSlider(
             name='Price', start=0, end=1, value=0.5
         ).servable(target='sidebar')
-       
+        self.shapefile = 'shape_files/Independent_System_Operators.shp'
         self.d_types = ['distributed_solar', 'wind_turbines', 'utility_solar']
-        # self.status_text = pn.widgets.StaticText(name='Status', value='', width=200)
+        self.status_text = pn.widgets.StaticText(name='Status', value='', width=200)
         self.shp_data = gpd.read_file('shape_files/Independent_System_Operators.shp') 
         self.CAISO = self.shp_data[self.shp_data['NAME'] == 'CALIFORNIA INDEPENDENT SYSTEM OPERATOR']
         self.PJM = self.shp_data[self.shp_data['NAME'] == 'PJM INTERCONNECTION, LLC']
@@ -49,8 +49,32 @@ class DERMapping:
         self.ISONE = self.shp_data[self.shp_data['NAME'] == 'ISO NEW ENGLAND INC.']
         self.ISOs = [self.CAISO, self.PJM, self.NYISO, self.ISONE]
         names = ['CAISO', 'PJM', 'NYISO', 'ISONE']
+        self.multi_choice = pn.widgets.MultiChoice(name='MultiSelect',
+            options=[i for i in names]).servable(target='sidebar')
+        pn.Column(self.multi_choice, height=200)
+        # self.multi_choice.param.watch(self.update_slider, 'value')
 
+    def create_bokeh_plot(self):
+        # Create your Bokeh plot here
+        from bokeh.plotting import figure
+        # caiso = gridstatus.CAISO()
+        # caiso_load = caiso.get_load(start="Jan 1, 2021", end="Jan 10, 2021")
+        # p = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
+        # p.line(caiso_load, legend_label="today load CAISO", line_width=2)
 
+        p = figure(title="Bokeh Plot in Sidebar", width=self.dimensions[0], height=self.dimensions[1])
+        self.pdatax = None
+        self.pdatay = None
+        for i in self.multi_choice.value: 
+
+            if i == 'CAISO':
+                self.pdatax = [1, 2, 3, 4, 5]
+                self.pdatay = [3, 5, 7, 2, 1]
+
+        p.circle([self.pdatax], [self.pdatay])
+        # p.circle([1, 2, 3, 4, 5], [3, 5, 7, 2, 1])
+        return p
+    
     def data(self): 
         x = pd.DataFrame(columns=['latitude', 'longitude']) 
         self.d = []
@@ -70,9 +94,10 @@ class DERMapping:
 
         decimated_points = decimate(points)
         shaded_plot = self.map * datashade(decimated_points, cmap='#560000')  # cmap=colorcet.kb)
-        shaded_plot.opts(width=1300, height=800)
+        shaded_plot.opts(width=self.dimensions[0], height=self.dimensions[1])
         return shaded_plot
-    
+
+
     def toggles(self): 
         self.checkboxes = []
         for i in self.d_types: 
@@ -83,37 +108,25 @@ class DERMapping:
             j.servable(target='sidebar')
     
     def move(self, event):
-
-
         # self.inside = None
         point_crs = {'init': 'epsg:4326'}
-
+        print(f"Mouse position: ({x}, {y})")
         x, y = event.xdata, event.ydata
-        # point = Point(x, y)
-        # for iso in self.ISOs: 
-        #     if iso.geometry.contains(point).any(): 
-        #         print("You are inside an ISO")
-        #         return
-            
-        if self.shp_data.crs != point_crs: 
+        
+        self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
+        self.shp = gpd.read_file(self.shapefile)
+
+        if self.shp.crs != point_crs: 
             print("Warning: CRS mismatch. Reprojecting point to match shapefile CRS.")
-            self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
             self.df_point = self.df_point.to_crs(self.shp_data.crs)
         else: 
-            self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
+            self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=self.shp_data.crs)
+
         # for iso in self.ISOs:
         #     joined = gpd.sjoin(self.df_point, iso, how='inner')
-        joined = gpd.sjoin(self.df_point, self.CAISO, how='inner')
-        if joined.shape[0] > 0: # FIXME: -> while?
-            self.inside = True
-        else: 
-            self.inside = False
-
-        # self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200)
-        # if self.inside: 
-        #     self.status_text = pn.widgets.StaticText(name='Status', value='You are within an ISO', width=200)
-        # return self.status_text
-        return self.inside # -> bool 
+        joined = gpd.sjoin(self.df_point, self.shp_data, how='inner') # FIXME: self.CAISO -> self.shp_data
+        self.inside_iso = joined.shape[0] > 0
+        self.status_text.value = ("You are within an ISO" if self.inside_iso else "You are not within an ISO")
     
     def handlers(self): 
         pass 
@@ -122,26 +135,26 @@ class DERMapping:
         self.toggles()
         shaded_plot = self.data()
         plot = pn.pane.HoloViews(shaded_plot).get_root()
-        plot.on_event('motion_notify_event', self.move) # -> has to be an issue with the cursor tracking. 
-
-        # caiso = gridstatus.CAISO() 
-        # caiso_load = caiso.get_load(start="Jan 1, 2021", end="Feb 1, 2021")
-        # load_mean = caiso_load.mean()
+        # plot.on_event(pn.EventName.MOUSE_MOVE, self.move) # -> has to be an issue with the cursor tracking. 
+        bokeh_plot = self.create_bokeh_plot()
         
-        if self.move: # FIXME: -> while? 
-            pn.widgets.StaticText(name='Status', value="test", width=200).servable()
-            # pn.widgets.StaticText(name='Status', value=str(load_mean), width=200).servable()
-        else: 
-            self.status_text = pn.widgets.StaticText(name='Status', value='You are not within an ISO', width=200).servable()
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
-            # self.status_text,
+            # pn.pane.HoloViews(bokeh_plot),
+            bokeh_plot,
+            self.status_text,
             align="center"
         ).servable(title="REBS DER Mapping")
+
+        # t_col = pn.Column(
+        #     "Graph", bokeh_plot, 
+        #     width=1300, 
+        #     height=800
+        #     ).servable(title="Bokeh Plot")
         return dashboard
     
 der_mapper = DERMapping()
 dashboard = der_mapper.gen_dashboard()
-
+# debug = der_mapper.move()
 

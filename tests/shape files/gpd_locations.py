@@ -16,7 +16,8 @@ def on_move(event):
         point = Point(x, y)  
         if california_data.geometry.contains(point).any():  
             # print(f"Latitude: {y}, Longitude: {x}")
-            mplcursors.cursor(hover=True).connect("add", lambda sel: sel.annotation.set_text("?"))
+            # mplcursors.cursor(hover=True).connect("add", lambda sel: sel.annotation.set_text("?"))
+            print(x, y)
 
 plt.connect('motion_notify_event', on_move)
 
