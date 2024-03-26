@@ -63,16 +63,22 @@ class DERMapping:
         # p.line(caiso_load, legend_label="today load CAISO", line_width=2)
 
         p = figure(title="Bokeh Plot in Sidebar", width=self.dimensions[0], height=self.dimensions[1])
-        self.pdatax = None
-        self.pdatay = None
-        for i in self.multi_choice.value: 
+        p.circle([1, 2, 3, 4, 5], [3, 5, 7, 2, 1])
 
-            if i == 'CAISO':
-                self.pdatax = [1, 2, 3, 4, 5]
-                self.pdatay = [3, 5, 7, 2, 1]
-
-        p.circle([self.pdatax], [self.pdatay])
-        # p.circle([1, 2, 3, 4, 5], [3, 5, 7, 2, 1])
+        # t_col = pn.Column(
+        #     "Graph", p, 
+        #     width=1300, 
+        #     height=800
+        #     ).servable(title="Bokeh Plot")
+        # for i in self.multi_choice.value: 
+        #     if i == 'CAISO':
+        #         t_col.visible = False
+        self.t_col = pn.Column(
+            "Graph", p, 
+            width=1300, 
+            height=800, 
+            visible=True
+        ).servable(title="Bokeh Plot")
         return p
     
     def data(self): 
@@ -97,7 +103,6 @@ class DERMapping:
         shaded_plot.opts(width=self.dimensions[0], height=self.dimensions[1])
         return shaded_plot
 
-
     def toggles(self): 
         self.checkboxes = []
         for i in self.d_types: 
@@ -110,7 +115,6 @@ class DERMapping:
     def move(self, event):
         # self.inside = None
         point_crs = {'init': 'epsg:4326'}
-        print(f"Mouse position: ({x}, {y})")
         x, y = event.xdata, event.ydata
         
         self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
@@ -127,32 +131,34 @@ class DERMapping:
         joined = gpd.sjoin(self.df_point, self.shp_data, how='inner') # FIXME: self.CAISO -> self.shp_data
         self.inside_iso = joined.shape[0] > 0
         self.status_text.value = ("You are within an ISO" if self.inside_iso else "You are not within an ISO")
-    
-    def handlers(self): 
-        pass 
 
-    def gen_dashboard(self):         
+    def plot_update(self, event): 
+        for i in event.new: 
+            if i == "CAISO": 
+                self.t_col.visible = False
+                return  # Exit the function once CAISO is found
+        # If CAISO is not found, set y.visible to True
+            else: 
+                self.t_col.visible = True
+    def gen_dashboard(self):       
+        pn.extension()  
         self.toggles()
         shaded_plot = self.data()
         plot = pn.pane.HoloViews(shaded_plot).get_root()
         # plot.on_event(pn.EventName.MOUSE_MOVE, self.move) # -> has to be an issue with the cursor tracking. 
         bokeh_plot = self.create_bokeh_plot()
-        
+
+
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
             # pn.pane.HoloViews(bokeh_plot),
-            bokeh_plot,
+            # bokeh_plot,
             self.status_text,
             align="center"
         ).servable(title="REBS DER Mapping")
-
-        # t_col = pn.Column(
-        #     "Graph", bokeh_plot, 
-        #     width=1300, 
-        #     height=800
-        #     ).servable(title="Bokeh Plot")
-        return dashboard
+        self.multi_choice.param.watch(self.plot_update, 'value')
+        return dashboard # -> ? 
     
 der_mapper = DERMapping()
 dashboard = der_mapper.gen_dashboard()
