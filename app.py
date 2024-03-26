@@ -1,4 +1,4 @@
-import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, boto3, geopandas as gpd, gridstatus
+import os, colorcet, param as pm, holoviews as hv, panel as pn, datashader as ds, pandas as pd, boto3, geopandas as gpd, gridstatus, plotly.express as px
 from holoviews.element import tiles as hvts
 from holoviews.operation.datashader  import rasterize, shade, spread
 from collections import OrderedDict as odict
@@ -10,7 +10,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 from data_fetching.fetch_data import DataFetcher
 from shapely.geometry import Point 
-
+from actors.pricing import Prices
+from bokeh.plotting import figure
 
 checkboxes = []
 #next goal = geojson configuration => consider creating one large data file with a column dedicated to type. this would be easier for toggles. 
@@ -56,28 +57,20 @@ class DERMapping:
 
     def create_bokeh_plot(self):
         # Create your Bokeh plot here
-        from bokeh.plotting import figure
         # caiso = gridstatus.CAISO()
         # caiso_load = caiso.get_load(start="Jan 1, 2021", end="Jan 10, 2021")
         # p = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
         # p.line(caiso_load, legend_label="today load CAISO", line_width=2)
-
-        p = figure(title="Bokeh Plot in Sidebar", width=self.dimensions[0], height=self.dimensions[1])
+        prices = Prices() 
+        CAISO_prices = prices.get_CAISO_prices()
+        p = figure(title="Bokeh Plot in Sidebar", x_axis_label='x', y_axis_label='y', width=self.dimensions[0], height=self.dimensions[1])
         p.circle([1, 2, 3, 4, 5], [3, 5, 7, 2, 1])
-
-        # t_col = pn.Column(
-        #     "Graph", p, 
-        #     width=1300, 
-        #     height=800
-        #     ).servable(title="Bokeh Plot")
-        # for i in self.multi_choice.value: 
-        #     if i == 'CAISO':
-        #         t_col.visible = False
+        # p.line(CAISO_prices, legend_label="Temp.", line_width=2)
         self.t_col = pn.Column(
             "Graph", p, 
             width=1300, 
             height=800, 
-            visible=True
+            visible=False
         ).servable(title="Bokeh Plot")
         return p
     
@@ -135,11 +128,12 @@ class DERMapping:
     def plot_update(self, event): 
         for i in event.new: 
             if i == "CAISO": 
-                self.t_col.visible = False
+                self.t_col.visible = True
                 return  # Exit the function once CAISO is found
         # If CAISO is not found, set y.visible to True
             else: 
-                self.t_col.visible = True
+                self.t_col.visible = False
+
     def gen_dashboard(self):       
         pn.extension()  
         self.toggles()
@@ -147,7 +141,6 @@ class DERMapping:
         plot = pn.pane.HoloViews(shaded_plot).get_root()
         # plot.on_event(pn.EventName.MOUSE_MOVE, self.move) # -> has to be an issue with the cursor tracking. 
         bokeh_plot = self.create_bokeh_plot()
-
 
         dashboard = pn.Column(
             "## DER Mapping ",
