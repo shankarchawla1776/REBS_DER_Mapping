@@ -26,3 +26,5 @@ To view interactive map, clone this repository, install the dependencies listed 
 ```
 panel serve app.py --autoreload --show
 ```
+Loading the interface may take a bit. 
+

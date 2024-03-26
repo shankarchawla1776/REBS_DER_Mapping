@@ -45,4 +45,4 @@ import plotly.express as px
 
 CAISO_prices = Prices().get_CAISO_prices()
 fig = px.line(CAISO_prices, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today")
-# fig.show() 
+fig.show()

@@ -50,29 +50,30 @@ class DERMapping:
         self.ISONE = self.shp_data[self.shp_data['NAME'] == 'ISO NEW ENGLAND INC.']
         self.ISOs = [self.CAISO, self.PJM, self.NYISO, self.ISONE]
         names = ['CAISO', 'PJM', 'NYISO', 'ISONE']
-        self.multi_choice = pn.widgets.MultiChoice(name='MultiSelect',
+        self.multi_choice = pn.widgets.MultiChoice(name='Select one ISO',
             options=[i for i in names]).servable(target='sidebar')
         pn.Column(self.multi_choice, height=200)
         # self.multi_choice.param.watch(self.update_slider, 'value')
 
     def create_bokeh_plot(self):
-        # Create your Bokeh plot here
-        # caiso = gridstatus.CAISO()
-        # caiso_load = caiso.get_load(start="Jan 1, 2021", end="Jan 10, 2021")
-        # p = figure(title="Simple line example", x_axis_label='x', y_axis_label='y')
-        # p.line(caiso_load, legend_label="today load CAISO", line_width=2)
+        pn.extension('plotly')
         prices = Prices() 
         CAISO_prices = prices.get_CAISO_prices()
-        p = figure(title="Bokeh Plot in Sidebar", x_axis_label='x', y_axis_label='y', width=self.dimensions[0], height=self.dimensions[1])
-        p.circle([1, 2, 3, 4, 5], [3, 5, 7, 2, 1])
+        fig = px.line(CAISO_prices, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today", width=self.dimensions[0], height=self.dimensions[1])
         # p.line(CAISO_prices, legend_label="Temp.", line_width=2)
+        self.names = ['CAISO_prices', 'PJM_prices', 'NYISO_prices', 'ISONE_prices']
+        # for i in self.multi_choice.value: 
+        #     for j in self.ISOs: 
+        #         if i == j: 
+        
+        fig = px.line(CAISO_prices, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today", width=self.dimensions[0], height=self.dimensions[1])
         self.t_col = pn.Column(
-            "Graph", p, 
+            "Graph", fig, 
             width=1300, 
             height=800, 
             visible=False
         ).servable(title="Bokeh Plot")
-        return p
+        return self.t_col
     
     def data(self): 
         x = pd.DataFrame(columns=['latitude', 'longitude']) 
@@ -140,7 +141,8 @@ class DERMapping:
         shaded_plot = self.data()
         plot = pn.pane.HoloViews(shaded_plot).get_root()
         # plot.on_event(pn.EventName.MOUSE_MOVE, self.move) # -> has to be an issue with the cursor tracking. 
-        bokeh_plot = self.create_bokeh_plot()
+
+        bokeh_plot = self.create_bokeh_plot().servable(title="Bokeh Plot")
 
         dashboard = pn.Column(
             "## DER Mapping ",
