@@ -32,7 +32,9 @@ class DERMapping:
         self.data_fetching = DataFetcher()
         self.map = OSM()
         self.checkboxes = []
-        self.dimensions = [1300, 800]
+        self.dimensions = [2000, 1000]
+        self.intro = pn.widgets.StaticText(name='Introduction', value="This is a project meant to serve as an expository collection of DER data accross the united states. All of the data seen here is availible on the project's GitHub repository with download instuctions in the README file.").servable(target='sidebar')
+        self.instructions = pn.widgets.StaticText(name="Instructions", value="To view today's pricing data, select an ISO from the dropdown menu. To view DER data, select the checkboxes for the desired data types.").servable(target='sidebar')
         self.capacity_slider = pn.widgets.FloatSlider(
             name='Capacity', start=0, end=10, value=5
         ).servable(target='sidebar')
@@ -52,28 +54,38 @@ class DERMapping:
         names = ['CAISO', 'PJM', 'NYISO', 'ISONE']
         self.multi_choice = pn.widgets.MultiChoice(name='Select one ISO',
             options=[i for i in names]).servable(target='sidebar')
-        pn.Column(self.multi_choice, height=200)
+        pn.Column(self.multi_choice, height=500)
         # self.multi_choice.param.watch(self.update_slider, 'value')
 
     def create_bokeh_plot(self):
         pn.extension('plotly')
         prices = Prices() 
         CAISO_prices = prices.get_CAISO_prices()
+        NYISO_prices = prices.get_NYISO_prices()
+        def create_fig(iso):
+            fig = px.line(iso, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today", width=self.dimensions[0], height=self.dimensions[1])
+            return fig
         fig = px.line(CAISO_prices, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today", width=self.dimensions[0], height=self.dimensions[1])
         # p.line(CAISO_prices, legend_label="Temp.", line_width=2)
         self.names = ['CAISO_prices', 'PJM_prices', 'NYISO_prices', 'ISONE_prices']
         # for i in self.multi_choice.value: 
         #     for j in self.ISOs: 
         #         if i == j: 
-        
         fig = px.line(CAISO_prices, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today", width=self.dimensions[0], height=self.dimensions[1])
         self.t_col = pn.Column(
-            "Graph", fig, 
-            width=1300, 
-            height=800, 
+            "Graph", create_fig(CAISO_prices), 
+            width=self.dimensions[0], 
+            height=self.dimensions[1], 
             visible=False
-        ).servable(title="Bokeh Plot")
-        return self.t_col
+        )
+        self.t_col2 = pn.Column(
+            "Graph", create_fig(NYISO_prices), 
+            width=self.dimensions[0], 
+            height=self.dimensions[1], 
+            visible=False
+        )
+        ls = [self.t_col, self.t_col2]
+        return ls
     
     def data(self): 
         x = pd.DataFrame(columns=['latitude', 'longitude']) 
@@ -94,7 +106,9 @@ class DERMapping:
 
         decimated_points = decimate(points)
         shaded_plot = self.map * datashade(decimated_points, cmap='#560000')  # cmap=colorcet.kb)
-        shaded_plot.opts(width=self.dimensions[0], height=self.dimensions[1])
+        shaded_plot.opts(width=self.dimensions[0], height=self.dimensions[1], align="center")
+        # shaded_plot.opts(width='100%', height='100%', sizing_mode='scale_both')
+
         return shaded_plot
 
     def toggles(self): 
@@ -128,12 +142,17 @@ class DERMapping:
 
     def plot_update(self, event): 
         for i in event.new: 
+            self.t_col.visible = False  
+            self.t_col2.visible = False
             if i == "CAISO": 
                 self.t_col.visible = True
                 return  # Exit the function once CAISO is found
+            elif i == "NYISO": 
+                self.t_col2.visible = True
+                return
         # If CAISO is not found, set y.visible to True
-            else: 
-                self.t_col.visible = False
+            # elif i != "CAISO" or "NYISO": 
+
 
     def gen_dashboard(self):       
         pn.extension()  
@@ -142,8 +161,9 @@ class DERMapping:
         plot = pn.pane.HoloViews(shaded_plot).get_root()
         # plot.on_event(pn.EventName.MOUSE_MOVE, self.move) # -> has to be an issue with the cursor tracking. 
 
-        bokeh_plot = self.create_bokeh_plot().servable(title="Bokeh Plot")
-
+        CAISO_plot = self.create_bokeh_plot()[0].servable(title="CAISO LMP")
+        NYISO_plot = self.create_bokeh_plot()[1].servable(title="NYISO LMP")
+        # NYISO_plot = self.create_bokeh_plot()[1].servable(title="Bokeh Plot")
         dashboard = pn.Column(
             "## DER Mapping ",
             pn.pane.HoloViews(shaded_plot),
