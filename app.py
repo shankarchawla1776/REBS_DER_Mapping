@@ -12,6 +12,7 @@ from data_fetching.fetch_data import DataFetcher
 from shapely.geometry import Point 
 from actors.pricing import Prices
 from bokeh.plotting import figure
+from actors.graphs import Graphing
 
 checkboxes = []
 #next goal = geojson configuration => consider creating one large data file with a column dedicated to type. this would be easier for toggles. 
@@ -72,20 +73,9 @@ class DERMapping:
         #     for j in self.ISOs: 
         #         if i == j: 
         fig = px.line(CAISO_prices, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today", width=self.dimensions[0], height=self.dimensions[1])
-        self.t_col = pn.Column(
-            "Graph", create_fig(CAISO_prices), 
-            width=self.dimensions[0], 
-            height=self.dimensions[1], 
-            visible=False
-        )
-        self.t_col2 = pn.Column(
-            "Graph", create_fig(NYISO_prices), 
-            width=self.dimensions[0], 
-            height=self.dimensions[1], 
-            visible=False
-        )
-        ls = [self.t_col, self.t_col2]
-        return ls
+        access_graphs = Graphing()
+        self.t_cols = access_graphs.gen_graphs()
+        return self.t_cols
     
     def data(self): 
         x = pd.DataFrame(columns=['latitude', 'longitude']) 
@@ -96,9 +86,6 @@ class DERMapping:
             df = pd.DataFrame(df, columns=['latitude', 'longitude'])
             self.d.append(df)
 
-        # x = len(self.d)
-        # for i in range(x):
-            
         combined_df = pd.concat([self.d[0], self.d[1]], ignore_index=True) # FIXME: for some reason, not every term is included.
         # combined_df = pd.concat([self.d], ignore_index=True)
         combined_df['x'], combined_df['y'] = lnglat_to_meters(combined_df['longitude'], combined_df['latitude'])
@@ -120,26 +107,6 @@ class DERMapping:
         for j in self.checkboxes:
             j.servable(target='sidebar')
     
-    def move(self, event):
-        # self.inside = None
-        point_crs = {'init': 'epsg:4326'}
-        x, y = event.xdata, event.ydata
-        
-        self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=point_crs)
-        self.shp = gpd.read_file(self.shapefile)
-
-        if self.shp.crs != point_crs: 
-            print("Warning: CRS mismatch. Reprojecting point to match shapefile CRS.")
-            self.df_point = self.df_point.to_crs(self.shp_data.crs)
-        else: 
-            self.df_point = gpd.GeoDataFrame(geometry=[Point(x, y)], crs=self.shp_data.crs)
-
-        # for iso in self.ISOs:
-        #     joined = gpd.sjoin(self.df_point, iso, how='inner')
-        joined = gpd.sjoin(self.df_point, self.shp_data, how='inner') # FIXME: self.CAISO -> self.shp_data
-        self.inside_iso = joined.shape[0] > 0
-        self.status_text.value = ("You are within an ISO" if self.inside_iso else "You are not within an ISO")
-
     def plot_update(self, event): 
         for i in event.new: 
             self.t_col.visible = False  
@@ -148,12 +115,12 @@ class DERMapping:
                 self.t_col.visible = True
                 return  # Exit the function once CAISO is found
             elif i == "NYISO": 
+
                 self.t_col2.visible = True
                 return
         # If CAISO is not found, set y.visible to True
             # elif i != "CAISO" or "NYISO": 
-
-
+            
     def gen_dashboard(self):       
         pn.extension()  
         self.toggles()
