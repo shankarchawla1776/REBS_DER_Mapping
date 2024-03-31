@@ -19,8 +19,17 @@ http(s)://s3.amazonaws.com/der-data-rebs/path/to/object
 | DER_data/full_coordinates.csv |Compilation|
 | transmission_lines.geojson | [EIA - U.S. Energy Atlas](https://atlas.eia.gov/datasets/bd24d1a282c54428b024988d32578e59_0/explore?location=39.011484%2C-107.389808%2C7.33)     |
 
-To view interactive map, clone this repository, install the dependencies listed in ```requirments.txt```, then open a terminal and run: 
+To run the project: 
+1. Clone the repository 
+2. Generate needed data files locally. 
 ```
+cd REBS_DER_Mapping
+cd daily_pricing
+python write_prices
+```
+3. 
+```
+cd REBS_DER_Mapping
 panel serve app.py --autoreload --show
 ```
 Loading the interface may take a bit. 
