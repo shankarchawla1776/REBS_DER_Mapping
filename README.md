@@ -22,13 +22,13 @@ http(s)://s3.amazonaws.com/der-data-rebs/path/to/object
 To run the project: 
 1. Clone the repository 
 2. Generate needed data files locally. 
-```
+```sh
 cd REBS_DER_Mapping
 cd daily_pricing
 python write_prices
 ```
 3. 
-```
+```sh
 cd REBS_DER_Mapping
 panel serve app.py --autoreload --show
 ```
