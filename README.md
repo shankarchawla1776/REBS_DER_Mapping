@@ -27,7 +27,7 @@ cd REBS_DER_Mapping
 cd daily_pricing
 python write_prices
 ```
-3. 
+3. Display the interface
 ```sh
 cd REBS_DER_Mapping
 panel serve app.py --autoreload --show
