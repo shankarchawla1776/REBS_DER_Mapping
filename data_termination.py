@@ -10,12 +10,8 @@ def delete_csv_files(file_paths):
 
 if __name__ == "__main__":
     csv_files = [
-        "ssp_prices.csv",
-        "ercot_prices.csv",
-        "isone_prices.csv",
-        "miso_prices.csv",
-        "pjm_prices.csv",
-        "nyiso_prices.csv",
-        "caiso_prices.csv"
+        "daily_pricing/miso_prices.csv",
+        "daily_pricing/nyiso_prices.csv",
+        "daily_pricing/caiso_prices.csv"
     ]  
     delete_csv_files(csv_files)

@@ -7,44 +7,27 @@ ISOs = ["CAISO", "PJM", "NYISO", "ISONE"]
 class Prices:
 
     def __init__(self): 
-        self.caiso = gridstatus.CAISO()
-        self.pjm = gridstatus.PJM()
-        self.nyiso = gridstatus.NYISO()
-        self.isone = gridstatus.ISONE()
-        self.spp = gridstatus.SPP()
+        pass
         
-    def get_CAISO_prices(self): 
-        prices = self.caiso.get_lmp(date="today", market="REAL_TIME_5_MIN", locations="ALL")
-        chunk_size = 10000
-        chunks = [prices[i:i+chunk_size] for i in range(0, len(prices), chunk_size)]
+    def get_CAISO_prices(self):
+        prices_file = "daily_pricing/nyiso_prices.csv"
+        chunks = pd.read_csv(prices_file, chunksize=10000)
         averages = [chunk["LMP"].mean() for chunk in chunks]
         averages_df = pd.DataFrame({"Chunk": range(1, len(averages) + 1), "Average LMP": averages})
         return averages_df
-    
+
     def get_NYISO_prices(self):
-        prices = self.nyiso.get_lmp(date="today", market="REAL_TIME_5_MIN")
-        chunk_size = 100
-        chunks = [prices[i:i+chunk_size] for i in range(0, len(prices), chunk_size)]
-        averages = [chunk["LMP"].mean() for chunk in chunks]
-        averages_df = pd.DataFrame({"Chunk": range(1, len(averages) + 1), "Average LMP": averages})
-        return averages_df
-    
-    def get_NEISO_prices(self): 
-        prices = self.spp.get_lmp(date="today", market="REAL_TIME_5_MIN", locations="ALL")
-        chunk_size = 10000
-        chunks = [prices[i:i+chunk_size] for i in range(0, len(prices), chunk_size)]
+        prices_file = "daily_pricing/nyiso_prices.csv"
+        chunks = pd.read_csv(prices_file, chunksize=10000)
         averages = [chunk["LMP"].mean() for chunk in chunks]
         averages_df = pd.DataFrame({"Chunk": range(1, len(averages) + 1), "Average LMP": averages})
         return averages_df
 
-# x = Prices()
-# z = x.get_NEISO_prices()
-# print(z)
-    
-import plotly.express as px
+    def get_MISO_prices(self):
+        prices_file = "daily_pricing/nyiso_prices.csv"
+        chunks = pd.read_csv(prices_file, chunksize=10000)
+        averages = [chunk["LMP"].mean() for chunk in chunks]
+        averages_df = pd.DataFrame({"Chunk": range(1, len(averages) + 1), "Average LMP": averages})
+        return averages_df
 
-CAISO_prices = Prices().get_CAISO_prices()
-NYISO_prices = Prices().get_NYISO_prices()
 
-fig = px.line(NYISO_prices, x="Average LMP", y="Chunk", title="CAISO LMP Prices - Today")
-fig.show()

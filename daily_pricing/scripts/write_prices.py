@@ -8,6 +8,7 @@ class write_daily_prices:
         self.CAISO = gs.CAISO() 
         self.NYISO = gs.NYISO()
         self.MISO = gs.MISO()
+
     
     def get_data(self, isos=[]): 
         for i in isos: 
@@ -22,4 +23,4 @@ class write_daily_prices:
                 prices.to_csv("daily_pricing/miso_prices.csv")
 
 call = write_daily_prices()
-prices = call.get_data(isos=["NYISO"])
+prices = call.get_data(isos=["NYISO", "CAISO", "MISO"])
