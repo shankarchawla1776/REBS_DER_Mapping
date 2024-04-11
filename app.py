@@ -56,9 +56,11 @@ class DERMapping:
         self.multi_choice = pn.widgets.MultiChoice(name='Select one ISO',
             options=[i for i in names]).servable(target='sidebar')
         pn.Column(self.multi_choice, height=500)
+        # self.t_col = pn.Column("Graph", "test", width=self.dimensions[0], height=self.dimensions[1], visible=False).servable()
+        
         # self.multi_choice.param.watch(self.update_slider, 'value')
 
-    def create_bokeh_plot(self):
+    def create_bokeh_plot(self): #FIXME: problem with graph jsons? 
         pn.extension('plotly')
         self.names = ['CAISO_prices', 'PJM_prices', 'NYISO_prices', 'ISONE_prices']
         access_graphs = Graphing() 
@@ -94,36 +96,36 @@ class DERMapping:
         for j in self.checkboxes:
             j.servable(target='sidebar')
     
-    def plot_update(self, event): 
-        for j in self.create_bokeh_plot(): 
-            j.visible = False
+    def change(self, event): 
+        # for j in self.create_bokeh_plot(): 
+        #     j.visible = False
         for i in event.new: 
-            if i == "CAISO": 
-                x = self.create_bokeh_plot()
-                x[0].visible = True
-                return
+            x = self.create_bokeh_plot()
+            dict = {"CAISO": x[0], "NYISO": x[1], "MISO": x[2]}
+            for j in dict.keys(): 
+                if i == j: 
+                    fig = dict[j]
+        x = pn.Column("Graph", fig, width=self.dimensions[0], height=self.dimensions[1], visible=True)
+        return x.servable()
 
             
-    # def plot_update(self, event): 
-    #     for i in event.new: 
-    #         if i == "CAISO": 
-    #             i.visible = True
-    #             return
-    #         elif i == "NYISO": 
-    #             i.visible = True
-    #             return
-    #         elif i == "MISO":
-    #             i.visible = True
-    #             return
+    def plot_update(self, event): 
+        for i in event.new: 
+            if i == "CAISO": 
+                x = self.change
+                x.visible = True
+                return
+
 
     def gen_dashboard(self):       
         pn.extension()  
         self.toggles()
         shaded_plot = self.data()
         plot = pn.pane.HoloViews(shaded_plot).get_root()
+        x = self.change
 
-        for i in self.create_bokeh_plot(): 
-            i.servable(title="Bokeh Plot")
+        # for i in self.create_bokeh_plot(): 
+        #     i.servable(title="Bokeh Plot")
 
         dashboard = pn.Column(
             "## DER Mapping ",
@@ -132,7 +134,8 @@ class DERMapping:
             align="center"
         ).servable(title="REBS DER Mapping")
         self.multi_choice.param.watch(self.plot_update, 'value')
-        return dashboard # -> ? 
+
+
     
 der_mapper = DERMapping()
 dashboard = der_mapper.gen_dashboard()

@@ -2,7 +2,7 @@ import gridstatus
 import pandas as pd 
 import panel as pn
 import plotly.express as px
-from actors.pricing import Prices
+from .pricing import Prices
 
 class Graphing: 
 
@@ -26,31 +26,39 @@ class Graphing:
         self.miso_lmp = None
 
         for i in iso: 
-            if i == "CAISO": 
-                self.caiso_lmp = pn.Column(
-                    "Graph", create_fig(self.CAISO), 
-                    width=self.dimensions[0], 
-                    height=self.dimensions[1], 
-                    visible=False
-                )
-                d.append(self.caiso_lmp)
-            elif i == "NYISO": 
-                self.nyiso_lmp = pn.Column(
-                    "Graph", create_fig(self.NYISO), 
-                    width=self.dimensions[0], 
-                    height=self.dimensions[1], 
-                    visible=False
-                )
-                d.append(self.nyiso_lmp)
-            elif i == "MISO": 
-                self.miso_lmp = pn.Column(
-                    "Graph", create_fig(self.MISO), 
-                    width=self.dimensions[0], 
-                    height=self.dimensions[1], 
-                    visible=False
-                )
-                d.append(self.miso_lmp)
-            
+                dict = {"CAISO": self.CAISO, "NYISO": self.NYISO, "MISO": self.MISO}
+                for key, value in dict.items():
+                    if i == key: 
+                        d.append(create_fig(value))
         return d 
-        
+
     
+x = Graphing()
+y = x.gen_graphs(iso=["CAISO", "NYISO", "MISO"])
+print(y)
+
+
+        # for i in iso: 
+        #     if i == "CAISO": 
+        #         self.caiso_lmp = pn.Column(
+        #             "Graph", create_fig(self.CAISO), 
+        #             width=self.dimensions[0], 
+        #             height=self.dimensions[1], 
+        #             visible=False
+        #         )
+        #         d.append(self.caiso_lmp)
+        #     elif i == "NYISO": 
+        #         self.nyiso_lmp = pn.Column(
+        #             "Graph", create_fig(self.NYISO), 
+        #             width=self.dimensions[0], 
+        #             height=self.dimensions[1], 
+        #             visible=False
+        #         )
+        #         d.append(self.nyiso_lmp)
+        #     elif i == "MISO": 
+        #         self.miso_lmp = pn.Column(
+        #             "Graph", create_fig(self.MISO), 
+        #             width=self.dimensions[0], 
+        #             height=self.dimensions[1], 
+        #             visible=False
+        #         )
